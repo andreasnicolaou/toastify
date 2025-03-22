@@ -4,3 +4,4 @@
 .github
 .prettierignore
 eslint.config.mjs
+copy-styles.js
