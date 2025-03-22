@@ -4,6 +4,15 @@
 
 # Toastify - A Simple and Lightweight Toast Notification Library
 
+![GitHub contributors](https://img.shields.io/github/contributors/andreasnicolaou/toastify)
+![GitHub License](https://img.shields.io/github/license/andreasnicolaou/toastify)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andreasnicolaou/toastify/build.yaml)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/andreasnicolaou/toastify)
+
+![NPM Downloads](https://img.shields.io/npm/dm/%40andreasnicolaou%2Ftoastify)
+
+## ![GitHub Repo stars](https://img.shields.io/github/stars/andreasnicolaou/toastify)
+
 Toastify is a super simple, fast, and easy-to-use toast notification library designed to display clean, customizable notifications in your web applications without any unnecessary bloat.
 
 ## Key Features:
