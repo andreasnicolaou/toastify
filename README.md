@@ -4,6 +4,8 @@
 
 # Toastify - A Simple and Lightweight Toast Notification Library
 
+DEMO: https://stackblitz.com/edit/vitejs-vite-md4bg7fw
+
 ![GitHub contributors](https://img.shields.io/github/contributors/andreasnicolaou/toastify)
 ![GitHub License](https://img.shields.io/github/license/andreasnicolaou/toastify)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andreasnicolaou/toastify/build.yaml)
