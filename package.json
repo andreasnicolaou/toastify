@@ -1,0 +1,75 @@
+{
+  "name": "@andreasnicolaou/toastify",
+  "version": "1.0.0",
+  "description": "Lightweight and customizable toast notifications for web applications.",
+  "main": "dist/index.js",
+  "private": false,
+  "types": "dist/types/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && node copy-styles",
+    "test": "jest",
+    "format": "prettier --write .",
+    "lint": "eslint --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreasnicolaou/toastify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andreasnicolaou/toastify/issues"
+  },
+  "author": "Andreas Nicolaou <anicolaou66@gmail.com>",
+  "license": "MIT",
+  "jest": {
+    "transform": {
+      "^.+\\.(ts)$": [
+        "ts-jest",
+        {
+          "isolatedModules": true
+        }
+      ]
+    },
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.10",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.2",
+    "eslint-plugin-prettier": "^5.2.3",
+    "globals": "^16.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "ncp": "^2.0.0",
+    "prettier": "3.5.3",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "toast",
+    "toast notifications",
+    "notifications",
+    "angular",
+    "react",
+    "vue",
+    "javascript",
+    "toastr",
+    "typescript",
+    "notifications",
+    "toastify",
+    "frontend"
+  ]
+}

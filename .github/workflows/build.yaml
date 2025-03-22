@@ -1,0 +1,23 @@
+name: CI Workflow Build
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - main
+jobs:
+  Lint_And_Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Run lint
+        run: npm run lint
+      - name: Run tests
+        run: npm run test
