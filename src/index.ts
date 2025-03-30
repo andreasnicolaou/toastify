@@ -19,7 +19,7 @@ export type ToastifyPosition =
   | 'bottom-center'
   | 'center';
 
-export type ToastifyType = 'success' | 'error' | 'warning' | 'info';
+export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default';
 /**
  * Initializes a new ToastifyManager instance to manage toast notifications.
  * @param position - The position where the toast container should be displayed (e.g., top-right, bottom-left).
@@ -60,6 +60,18 @@ export class ToastifyManager {
     };
     const toastifyContainer = new ToastifyContainer(position, customClasses);
     this.toastifyQueue = new ToastifyQueue(toastifyContainer.element, maxToasts ?? 5);
+  }
+
+  /**
+   * Displays a default toast notification.
+   * @param title - The title of the toast.
+   * @param message - The message content of the toast.
+   * @param options - Customization for this individual toast. These options are merged with the defaults
+   *                  set on ToastifyManager, and can be overriden individually
+   * @memberof ToastifyManager
+   */
+  public default(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
+    this.toastifyQueue.enqueue(title, message, 'default', { ...this.options, ...options });
   }
 
   /**
