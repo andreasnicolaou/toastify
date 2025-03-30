@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="tostify.jpg" alt="Logo">
+  <img src="toastify.jpg" alt="Logo">
 </p>
 
 # Toastify - A Simple and Lightweight Toast Notification Library
@@ -36,6 +36,7 @@ npm install @andreasnicolaou/toastify
 import { ToastifyManager } from '@andreasnicolaou/toastify';
 
 const toastifyManager = new ToastifyManager('top-right', { closeButton: true, withProgressBar: true });
+toastifyManager.default('Default', 'Default message from toastify');
 toastifyManager.error('Error!', 'Something went wrong, please try again.');
 toastifyManager.success('Success!', 'Your operation was completed successfully.');
 toastifyManager.warning('Warning!', 'This action might have unintended consequences.');
@@ -53,6 +54,7 @@ You have two options for applying styles.
 
 | Function                            | Description               | Options                                                                                                 |
 | ----------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `default(title, message, options?)` | Displays a default toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
 | `error(title, message, options?)`   | Displays an error toast.  | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
 | `success(title, message, options?)` | Displays a success toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
 | `warning(title, message, options?)` | Displays a warning toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |

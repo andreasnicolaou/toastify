@@ -45,6 +45,19 @@ describe('ToastifyManager', () => {
     expect(toastifyManager).toMatchObject({ options: defaultOptions });
   });
 
+  it('should call enqueue with correct arguments for default toast', () => {
+    toastifyManager.default('Default!', 'I am a default toast.', { duration: 2000 });
+    expect(mockToastifyQueue.enqueue).toHaveBeenCalledWith('Default!', 'I am a default toast.', 'default', {
+      duration: 2000,
+      isHtml: false,
+      withProgressBar: true,
+      progressBarDuration: 100,
+      closeButton: false,
+      showIcons: true,
+      direction: 'ltr',
+    });
+  });
+
   it('should call enqueue with correct arguments for error toast', () => {
     toastifyManager.error('Error!', 'Something went wrong, please try again.', { duration: 2000 });
     expect(mockToastifyQueue.enqueue).toHaveBeenCalledWith(

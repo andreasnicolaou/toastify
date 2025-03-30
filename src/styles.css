@@ -120,6 +120,7 @@
   position: relative;
   margin-right: 4px;
   margin-left: 4px;
+  flex: 1;
 }
 
 .noap-toastify-close:hover {
@@ -137,6 +138,10 @@
 
 .noap-toastify-warning {
   background-color: #ff9800;
+}
+
+.noap-toastify-default {
+  background-color: #333;
 }
 
 .noap-toastify-info {
@@ -167,6 +172,10 @@
 
 .noap-toastify-icon.error {
   color: #f44336;
+}
+
+.noap-toastify-icon.default {
+  color: #333;
 }
 
 .noap-toastify-icon.warning {
