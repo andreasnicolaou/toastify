@@ -28,10 +28,7 @@
   "jest": {
     "transform": {
       "^.+\\.(ts)$": [
-        "ts-jest",
-        {
-          "isolatedModules": true
-        }
+        "ts-jest"
       ]
     },
     "testEnvironment": "jsdom",
