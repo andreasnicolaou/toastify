@@ -6,10 +6,16 @@
 
 DEMO: https://stackblitz.com/edit/vitejs-vite-md4bg7fw
 
+![TypeScript](https://img.shields.io/badge/TS-TypeScript-3178c6?logo=typescript&logoColor=white)
 ![GitHub contributors](https://img.shields.io/github/contributors/andreasnicolaou/toastify)
 ![GitHub License](https://img.shields.io/github/license/andreasnicolaou/toastify)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andreasnicolaou/toastify/build.yaml)
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/andreasnicolaou/toastify)
+
+![ESLint](https://img.shields.io/badge/linter-eslint-4B32C3.svg?logo=eslint)
+![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?logo=prettier)
+![Jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?logo=jest)
+![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
 ![NPM Downloads](https://img.shields.io/npm/dm/%40andreasnicolaou%2Ftoastify)
 
