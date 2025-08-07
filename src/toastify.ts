@@ -1,5 +1,5 @@
-import { ToastifyIcons } from './toastify-icons';
 import { ToastifyOptions, ToastifyType } from './index';
+import { ToastifyIcons } from './toastify-icons';
 
 export class Toastify {
   /**

@@ -1,5 +1,5 @@
-import { Toastify } from './toastify';
 import { ToastifyOptions, ToastifyType } from './index';
+import { Toastify } from './toastify';
 
 export class ToastifyQueue {
   private activeToasts: number = 0;

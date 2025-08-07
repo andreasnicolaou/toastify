@@ -1,5 +1,5 @@
-import { Toastify } from './toastify';
 import '@testing-library/jest-dom';
+import { Toastify } from './toastify';
 
 describe('Toastify', () => {
   let htmlContainer!: HTMLElement;

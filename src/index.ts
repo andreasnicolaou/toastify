@@ -1,3 +1,4 @@
+import './styles.css';
 import { ToastifyContainer } from './toastify-container';
 import { ToastifyQueue } from './toastify-queue';
 export interface ToastifyOptions {
