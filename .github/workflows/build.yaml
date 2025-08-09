@@ -25,5 +25,17 @@ jobs:
         run: npm run lint
       - name: Check code formatting
         run: npm run format:check
-      - name: Run tests
-        run: npm run test
+      - name: Run tests and generate JUnit XML
+        run: npm run test:ci
+      - name: Run tests with coverage
+        run: npm run test:coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: andreasnicolaou/typescript-expression-language
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
