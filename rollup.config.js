@@ -55,6 +55,31 @@ export default [
       }),
     ],
   },
+  // UMD build (un-minified)
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/index.umd.js',
+      format: 'umd',
+      name: 'toastify',
+      sourcemap: false,
+    },
+    plugins: [
+      resolve({ preferBuiltins: false, browser: true }),
+      commonjs(),
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false,
+        declarationMap: false,
+        tslib: 'bundled',
+      }),
+      postcss({
+        extract: 'index.css',
+        minimize: true,
+        sourceMap: false,
+      }),
+    ],
+  },
   // UMD build (minified)
   {
     input: 'src/index.ts',

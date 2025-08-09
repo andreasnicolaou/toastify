@@ -9,6 +9,7 @@ export class Toastify {
   public static create(
     htmlContainer: HTMLElement,
     maxToasts: number,
+    newestOnTop: boolean | undefined,
     title: string,
     message: string,
     type: ToastifyType,
@@ -16,8 +17,21 @@ export class Toastify {
     onComplete: () => void
   ): void {
     const toastifyElement: HTMLDivElement = document.createElement('div');
-    toastifyElement.className = `noap-toastify-toast noap-toastify-${options.direction}`;
+    const animationType = options.animationType || 'fade';
+    toastifyElement.className = `noap-toastify-toast noap-toastify-${options.direction} noap-toastify-anim-${animationType}`;
     toastifyElement.classList.add(`noap-toastify-${type}`);
+    if (options.tapToDismiss) {
+      toastifyElement.style.cursor = 'pointer';
+      toastifyElement.addEventListener('click', () => {
+        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
+        setTimeout(() => {
+          if (toastifyElement.parentElement === htmlContainer) {
+            htmlContainer.removeChild(toastifyElement);
+            onComplete();
+          }
+        }, 500);
+      });
+    }
 
     const parentElement = document.createElement('div');
     parentElement.className = 'noap-toastify-wrapper';
@@ -58,7 +72,7 @@ export class Toastify {
           progressBar!.style.width = `${progress}%`;
           if (progress <= 0) {
             clearInterval(progressInterval!);
-            toastifyElement.classList.add('noap-toastify-fade-out');
+            toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
             setTimeout(() => {
               htmlContainer.removeChild(toastifyElement);
               onComplete();
@@ -85,7 +99,7 @@ export class Toastify {
               progressBar!.style.width = `${progress}%`;
               if (progress <= 0) {
                 clearInterval(progressInterval!);
-                toastifyElement.classList.add('noap-toastify-fade-out');
+                toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
                 setTimeout(() => {
                   htmlContainer.removeChild(toastifyElement);
                   onComplete();
@@ -100,7 +114,7 @@ export class Toastify {
 
     if (!options.withProgressBar && options.duration! > 0) {
       setTimeout(() => {
-        toastifyElement.classList.add('noap-toastify-fade-out');
+        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
         setTimeout(() => {
           htmlContainer.removeChild(toastifyElement);
           onComplete();
@@ -119,7 +133,7 @@ export class Toastify {
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
         </svg>`;
       closeBtn.onclick = (): void => {
-        toastifyElement.classList.add('noap-toastify-fade-out');
+        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
         setTimeout(() => {
           htmlContainer.removeChild(toastifyElement);
           onComplete();
@@ -127,13 +141,17 @@ export class Toastify {
       };
       toastifyElement.appendChild(closeBtn);
     }
-    htmlContainer.appendChild(toastifyElement);
+    if (newestOnTop) {
+      htmlContainer.insertBefore(toastifyElement, htmlContainer.firstChild);
+    } else {
+      htmlContainer.appendChild(toastifyElement);
+    }
     // Check if the number of toasts exceeds the maximum allowed
     if (htmlContainer.children.length > maxToasts) {
       for (const element of Array.from(htmlContainer.children)) {
         const oldestToast = element as HTMLElement;
         if (!oldestToast.classList.contains('noap-toastify-hovering')) {
-          oldestToast.classList.add('noap-toastify-fade-out');
+          oldestToast.classList.add(`noap-toastify-anim-${animationType}-out`);
           setTimeout(() => {
             htmlContainer.removeChild(oldestToast);
           }, 500);

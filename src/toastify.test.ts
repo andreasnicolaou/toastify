@@ -21,6 +21,7 @@ describe('Toastify', () => {
     Toastify.create(
       htmlContainer,
       5,
+      false,
       'Success!',
       'Your operation was completed successfully.',
       'success',
@@ -41,7 +42,7 @@ describe('Toastify', () => {
       'Your operation was completed successfully.'
     );
     jest.advanceTimersByTime(5000);
-    expect(toastifyElement?.classList.contains('noap-toastify-fade-out')).toBe(true);
+    expect(toastifyElement?.classList.contains('noap-toastify-anim-fade-out')).toBe(true);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
@@ -49,6 +50,7 @@ describe('Toastify', () => {
     Toastify.create(
       htmlContainer,
       5,
+      false,
       'Heads Up!',
       'You have new updates available.',
       'info',
@@ -79,6 +81,7 @@ describe('Toastify', () => {
     Toastify.create(
       htmlContainer,
       5,
+      false,
       'Success!',
       'Your operation was completed successfully.',
       'success',
@@ -97,8 +100,110 @@ describe('Toastify', () => {
     if (closeButton) {
       (closeButton as HTMLElement).click();
     }
-    expect(toastifyElement?.classList.contains('noap-toastify-fade-out')).toBe(true);
+    expect(toastifyElement?.classList.contains('noap-toastify-anim-fade-out')).toBe(true);
     jest.advanceTimersByTime(200);
     expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('dismisses toast on tap when tapToDismiss is true', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      'Tap!',
+      'Tap to dismiss.',
+      'info',
+      {
+        direction: 'ltr',
+        isHtml: false,
+        showIcons: true,
+        withProgressBar: false,
+        duration: 3000,
+        closeButton: false,
+        tapToDismiss: true,
+      },
+      onComplete
+    );
+    const toastifyElement = htmlContainer.querySelector('.noap-toastify-toast');
+    expect(toastifyElement).toBeInTheDocument();
+    if (toastifyElement) {
+      toastifyElement.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      jest.advanceTimersByTime(500);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  test('renders HTML message when isHtml is true', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      'HTML!',
+      '<b>Bold Message</b>',
+      'info',
+      {
+        direction: 'ltr',
+        isHtml: true,
+        showIcons: true,
+        withProgressBar: false,
+        duration: 3000,
+        closeButton: false,
+      },
+      onComplete
+    );
+    const toastifyElement = htmlContainer.querySelector('.noap-toastify-toast');
+    const message = toastifyElement?.querySelector('.noap-toastify-message');
+    expect(message?.innerHTML).toBe('<b>Bold Message</b>');
+  });
+
+  test('dismisses toast on tap when tapToDismiss is true', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      'Tap!',
+      'Tap to dismiss.',
+      'info',
+      {
+        direction: 'ltr',
+        isHtml: false,
+        showIcons: true,
+        withProgressBar: false,
+        duration: 3000,
+        closeButton: false,
+        tapToDismiss: true,
+      },
+      onComplete
+    );
+    const toastifyElement = htmlContainer.querySelector('.noap-toastify-toast');
+    expect(toastifyElement).toBeInTheDocument();
+    if (toastifyElement) {
+      toastifyElement.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      jest.advanceTimersByTime(500);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  test('renders HTML message when isHtml is true', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      'HTML!',
+      '<b>Bold Message</b>',
+      'info',
+      {
+        direction: 'ltr',
+        isHtml: true,
+        showIcons: true,
+        withProgressBar: false,
+        duration: 3000,
+        closeButton: false,
+      },
+      onComplete
+    );
+    const toastifyElement = htmlContainer.querySelector('.noap-toastify-toast');
+    const message = toastifyElement?.querySelector('.noap-toastify-message');
+    expect(message?.innerHTML).toBe('<b>Bold Message</b>');
   });
 });

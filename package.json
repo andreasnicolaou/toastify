@@ -22,7 +22,6 @@
     "build": "rollup -c",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:check:hook": "npm run format:check || (echo '\\n💡 To fix all formatting issues, run: npm run format' && exit 1)",
     "lint": "eslint --fix",
     "test": "jest",
     "test:ci": "cross-env JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --reporters=default --reporters=jest-junit",
@@ -34,12 +33,17 @@
     "files": [
       {
         "path": "dist/index.js",
-        "maxSize": "5kB",
+        "maxSize": "4kB",
         "compression": "gzip"
       },
       {
         "path": "dist/index.cjs",
-        "maxSize": "5kB",
+        "maxSize": "4kB",
+        "compression": "gzip"
+      },
+      {
+        "path": "dist/index.umd.js",
+        "maxSize": "4kB",
         "compression": "gzip"
       },
       {
