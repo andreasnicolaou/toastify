@@ -12,6 +12,7 @@ export interface ToastifyOptions {
   showIcons?: boolean;
   animationType?: ToastifyAnimationType;
   tapToDismiss?: boolean;
+  progressBarDirection?: 'decrease' | 'increase';
 }
 
 export type ToastifyPosition =
@@ -20,7 +21,9 @@ export type ToastifyPosition =
   | 'bottom-left'
   | 'bottom-right'
   | 'top-center'
+  | 'top-center-full'
   | 'bottom-center'
+  | 'bottom-center-full'
   | 'center';
 
 export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default' | 'light';
@@ -38,6 +41,11 @@ export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default' 
  *   - showIcons (optional): Whether to display icons next to the toast message (default is true).
  *   - direction (optional): The direction of the text within the toast (default is 'ltr', left-to-right).
  *   - animationType (optional): The type of animation for the toast (default is 'fade', use 'none' for no animation).
+ *   - progressBarDirection (optional): The direction of the progress bar animation (default is 'decrease').
+ * @throws Error if called in a non-browser environment.
+ * @returns A new instance of ToastifyManager.
+ * @memberof ToastifyManager
+ * @author Andreas Nicolaou
  */
 export class ToastifyManager {
   private readonly options!: ToastifyOptions;
@@ -66,6 +74,7 @@ export class ToastifyManager {
       direction: 'ltr',
       animationType: 'fade',
       tapToDismiss: false,
+      progressBarDirection: 'decrease',
       ...options,
     };
     const toastifyContainer = new ToastifyContainer(position, customClasses);
@@ -79,6 +88,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public default(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'default', { ...this.options, ...options });
@@ -91,6 +101,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public error(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'error', { ...this.options, ...options });
@@ -103,6 +114,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public info(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'info', { ...this.options, ...options });
@@ -115,6 +127,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public light(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'light', { ...this.options, ...options });
@@ -127,6 +140,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually.
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public success(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'success', { ...this.options, ...options });

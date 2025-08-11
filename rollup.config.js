@@ -24,7 +24,7 @@ export default [
         tslib: 'bundled',
       }),
       postcss({
-        extract: 'index.css',
+        extract: 'styles.css',
         minimize: true,
         sourceMap: false,
       }),
@@ -49,7 +49,7 @@ export default [
         tslib: 'bundled',
       }),
       postcss({
-        extract: 'index.css',
+        extract: 'styles.css',
         minimize: true,
         sourceMap: false,
       }),
@@ -74,7 +74,7 @@ export default [
         tslib: 'bundled',
       }),
       postcss({
-        extract: 'index.css',
+        extract: 'styles.css',
         minimize: true,
         sourceMap: false,
       }),
@@ -99,7 +99,7 @@ export default [
         tslib: 'bundled',
       }),
       postcss({
-        extract: 'index.css',
+        extract: 'styles.css',
         minimize: true,
         sourceMap: false,
       }),

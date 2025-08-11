@@ -14,6 +14,7 @@ export class ToastifyContainer {
    * Get the container element where the toast will be appended.
    * @returns The container HTMLElement.
    * @memberof ToastifyContainer
+   * @author Andreas Nicolaou
    */
   get element(): HTMLElement {
     return this.container;

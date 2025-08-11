@@ -51,6 +51,33 @@
   align-items: center;
 }
 
+.noap-toastify-bottom-center-full {
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+  transform: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.noap-toastify-top-center-full {
+  top: 10px;
+  left: 0;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+  transform: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.noap-toastify-bottom-center-full .noap-toastify-toast,
+.noap-toastify-top-center-full .noap-toastify-toast {
+  width: 100%;
+}
+
 .noap-toastify-ltr {
   text-align: left;
 }
@@ -58,6 +85,12 @@
 .noap-toastify-rtl {
   text-align: right;
   direction: rtl;
+}
+
+.noap-toastify-tap-hover:hover {
+  cursor: pointer;
+  box-shadow: 0px 2px 5px 0px #615a5a;
+  transition: box-shadow 0.15s ease-in;
 }
 
 .noap-toastify-toast {
