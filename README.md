@@ -131,33 +131,34 @@ toast.info('Heads Up!', 'You have new updates available.', { closeButton: false 
 
 ### Toast Methods
 
-| Function                            | Description               | Options (per toast, overrides manager)                                                                  |
-| ----------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `default(title, message, options?)` | Displays a default toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
-| `light(title, message, options?)`   | Displays a light toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
-| `error(title, message, options?)`   | Displays an error toast.  | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
-| `success(title, message, options?)` | Displays a success toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
-| `warning(title, message, options?)` | Displays a warning toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
-| `info(title, message, options?)`    | Displays an info toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons` |
+| Function                            | Description               | Options (per toast, overrides manager)                                                                                                                           |
+| ----------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default(title, message, options?)` | Displays a default toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
+| `light(title, message, options?)`   | Displays a light toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
+| `error(title, message, options?)`   | Displays an error toast.  | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
+| `success(title, message, options?)` | Displays a success toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
+| `warning(title, message, options?)` | Displays a warning toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
+| `info(title, message, options?)`    | Displays an info toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
 
 All options can be set globally on the manager or per-toast (per call).
 
 ## Options
 
-| Option                | Description                                                                                           | Default Value |
-| --------------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
-| `duration`            | Time in milliseconds for the toast to remain visible. Setting this to 0 will stick the toast forever. | 3000          |
-| `isHtml`              | Whether the message should support HTML.                                                              | false         |
-| `withProgressBar`     | Show a progress bar for the toast.                                                                    | false         |
-| `progressBarDuration` | Duration of the progress bar (milliseconds).                                                          | 100           |
-| `closeButton`         | Show a close button on the toast.                                                                     | false         |
-| `showIcons`           | Show icons for each toast type (error, success, etc.).                                                | true          |
-| `direction`           | Direction of the text (`ltr` or `rtl`).                                                               | ltr           |
-| `customClasses`       | Custom CSS classes to add to the toast container.                                                     | ""            |
-| `maxToasts`           | The maximum number of toasts that can be displayed at once.                                           | 5             |
-| `animationType`       | Animation style: `fade`, `slide`, `zoom`, `bounce`, `flip`, `none`.                                   | fade          |
-| `tapToDismiss`        | Dismiss toast on click/tap.                                                                           | false         |
-| `newestOnTop`         | Stack newest toasts on top (`true`) or bottom (`false`).                                              | false         |
+| Option                 | Description                                                                                           | Default Value |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
+| `duration`             | Time in milliseconds for the toast to remain visible. Setting this to 0 will stick the toast forever. | 3000          |
+| `isHtml`               | Whether the message should support HTML.                                                              | false         |
+| `withProgressBar`      | Show a progress bar for the toast.                                                                    | false         |
+| `progressBarDuration`  | Duration of the progress bar (milliseconds).                                                          | 100           |
+| `closeButton`          | Show a close button on the toast.                                                                     | false         |
+| `showIcons`            | Show icons for each toast type (error, success, etc.).                                                | true          |
+| `direction`            | Direction of the text (`ltr` or `rtl`).                                                               | ltr           |
+| `customClasses`        | Custom CSS classes to add to the toast container.                                                     | ""            |
+| `maxToasts`            | The maximum number of toasts that can be displayed at once.                                           | 5             |
+| `animationType`        | Animation style: `fade`, `slide`, `zoom`, `bounce`, `flip`, `none`.                                   | fade          |
+| `tapToDismiss`         | Dismiss toast on click/tap.                                                                           | false         |
+| `newestOnTop`          | Stack newest toasts on top (`true`) or bottom (`false`).                                              | false         |
+| `progressBarDirection` | Progress Bar direction either `increase` or `decrease`.                                               | decrease      |
 
 ### Theming & Customization
 

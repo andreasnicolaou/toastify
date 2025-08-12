@@ -33,6 +33,7 @@ describe('ToastifyManager', () => {
     const defaultOptions = {
       duration: 3000,
       isHtml: false,
+      progressBarDirection: 'decrease',
       withProgressBar: true,
       progressBarDuration: 100,
       closeButton: false,
@@ -52,6 +53,7 @@ describe('ToastifyManager', () => {
     expect(mockToastifyQueue.enqueue).toHaveBeenCalledWith('Default!', 'I am a default toast.', 'default', {
       duration: 2000,
       isHtml: false,
+      progressBarDirection: 'decrease',
       withProgressBar: true,
       progressBarDuration: 100,
       closeButton: false,
@@ -71,6 +73,7 @@ describe('ToastifyManager', () => {
       {
         duration: 2000,
         isHtml: false,
+        progressBarDirection: 'decrease',
         withProgressBar: true,
         progressBarDuration: 100,
         closeButton: false,
@@ -87,6 +90,7 @@ describe('ToastifyManager', () => {
     expect(mockToastifyQueue.enqueue).toHaveBeenCalledWith('Heads Up!', 'You have new updates available.', 'info', {
       duration: 3000,
       isHtml: false,
+      progressBarDirection: 'decrease',
       withProgressBar: true,
       progressBarDuration: 100,
       closeButton: false,
@@ -106,6 +110,7 @@ describe('ToastifyManager', () => {
       {
         duration: 3000,
         isHtml: false,
+        progressBarDirection: 'decrease',
         withProgressBar: true,
         progressBarDuration: 100,
         closeButton: true,
@@ -126,6 +131,7 @@ describe('ToastifyManager', () => {
       {
         duration: 3000,
         isHtml: true,
+        progressBarDirection: 'decrease',
         withProgressBar: true,
         progressBarDuration: 100,
         closeButton: false,

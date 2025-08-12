@@ -27,6 +27,7 @@ export class ToastifyQueue {
    * @param type - The type of the toast (e.g., success, error, etc.).
    * @param options - Customization options for the toast (optional).
    * @memberof ToastifyQueue
+   * @author Andreas Nicolaou
    */
   public enqueue(
     title: string,
@@ -58,6 +59,7 @@ export class ToastifyQueue {
   /**
    * Processes the queue to display the next toast when space becomes available.
    * @memberof ToastifyQueue
+   * @author Andreas Nicolaou
    */
   private processQueue(): void {
     // If there is space and the queue is not empty, display the next toast
