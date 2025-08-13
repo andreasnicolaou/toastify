@@ -57,7 +57,7 @@
     "type": "git",
     "url": "https://github.com/andreasnicolaou/toastify.git"
   },
-  "homepage": "https://github.com/andreasnicolaou/toastify#readme",
+  "homepage": "https://andreasnicolaou.github.io/toastify/",
   "bugs": {
     "url": "https://github.com/andreasnicolaou/toastify/issues"
   },
@@ -65,7 +65,10 @@
     "type": "github",
     "url": "https://github.com/sponsors/andreasnicolaou"
   },
-  "author": "Andreas Nicolaou <anicolaou66@gmail.com>",
+  "author": {
+    "name": "Andreas Nicolaou",
+    "email": "anicolaou66@gmail.com"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=16"
