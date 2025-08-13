@@ -142,4 +142,20 @@ describe('ToastifyManager', () => {
       }
     );
   });
+
+  test('should call enqueue with correct arguments for light toast', () => {
+    toastifyManager.light('Light!', 'This is a light toast.', { duration: 1500 });
+    expect(mockToastifyQueue.enqueue).toHaveBeenCalledWith('Light!', 'This is a light toast.', 'light', {
+      duration: 1500,
+      isHtml: false,
+      progressBarDirection: 'decrease',
+      withProgressBar: true,
+      progressBarDuration: 100,
+      closeButton: false,
+      showIcons: true,
+      direction: 'ltr',
+      animationType: 'fade',
+      tapToDismiss: false,
+    });
+  });
 });

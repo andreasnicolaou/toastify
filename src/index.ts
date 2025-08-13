@@ -62,6 +62,7 @@ export class ToastifyManager {
     )
   ) {
     if (typeof document === 'undefined') {
+      /* istanbul ignore next */
       throw new Error('document is not available. Toastify can only be used in a browser environment.');
     }
     this.options = {

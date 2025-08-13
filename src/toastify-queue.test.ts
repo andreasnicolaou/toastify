@@ -81,4 +81,16 @@ describe('ToastifyQueue', () => {
     expect(toastifyQueue['activeToasts']).toBe(1);
     expect(toastifyQueue['queue'].length).toBe(0);
   });
+
+  test('processQueue processes a queued toast when space is available', () => {
+    const htmlContainer = document.createElement('div');
+    const toastifyQueue = new ToastifyQueue(htmlContainer, 2, false);
+    toastifyQueue['activeToasts'] = 0;
+    const mockCreate = jest.fn((cb) => cb && cb());
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (toastifyQueue as any).queue = [{ create: mockCreate }];
+    toastifyQueue['processQueue']();
+    expect(mockCreate).toHaveBeenCalled();
+    expect(toastifyQueue['activeToasts']).toBe(0); // Callback decrements it
+  });
 });
