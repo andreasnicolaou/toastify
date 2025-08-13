@@ -567,6 +567,8 @@
               </svg>
             `;
             cdnStatus.setAttribute('title', 'CDN failed to load Toastify.');
+            getElement('toastButton')?.setAttribute('disabled', 'true');
+            getElement('toastClearButton')?.setAttribute('disabled', 'true');
             hideLoadingOverlay(() => {
               initToastifyDemo();
             });
@@ -579,6 +581,8 @@
             </svg>
           `;
           cdnStatus.setAttribute('title', 'Error loading Toastify.');
+          getElement('toastButton')?.setAttribute('disabled', 'true');
+          getElement('toastClearButton')?.setAttribute('disabled', 'true');
           hideLoadingOverlay(() => {
             initToastifyDemo();
           });
