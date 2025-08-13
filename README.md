@@ -23,11 +23,13 @@ You can try this library live:
 ![GitHub License](https://img.shields.io/github/license/andreasnicolaou/toastify)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andreasnicolaou/toastify/build.yaml)
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/andreasnicolaou/toastify)
+[![Known Vulnerabilities](https://snyk.io/test/github/andreasnicolaou/toastify/badge.svg)](https://snyk.io/test/github/andreasnicolaou/toastify)
 
 ![ESLint](https://img.shields.io/badge/linter-eslint-4B32C3.svg?logo=eslint)
 ![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?logo=prettier)
 ![Jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?logo=jest)
 ![Maintenance](https://img.shields.io/maintenance/yes/2025)
+[![codecov](https://codecov.io/gh/andreasnicolaou/toastify/graph/badge.svg?token=ELH4YWG68O)](https://codecov.io/gh/andreasnicolaou/toastify)
 
 ![NPM Downloads](https://img.shields.io/npm/dm/%40andreasnicolaou%2Ftoastify)
 
