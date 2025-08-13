@@ -55,7 +55,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/andreasnicolaou/toastify.git"
+    "url": "git+https://github.com/andreasnicolaou/toastify.git"
   },
   "homepage": "https://andreasnicolaou.github.io/toastify/",
   "bugs": {
