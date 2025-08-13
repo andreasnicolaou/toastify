@@ -51,6 +51,33 @@
   align-items: center;
 }
 
+.noap-toastify-bottom-center-full {
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+  transform: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.noap-toastify-top-center-full {
+  top: 10px;
+  left: 0;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+  transform: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.noap-toastify-bottom-center-full .noap-toastify-toast,
+.noap-toastify-top-center-full .noap-toastify-toast {
+  width: 100%;
+}
+
 .noap-toastify-ltr {
   text-align: left;
 }
@@ -58,6 +85,12 @@
 .noap-toastify-rtl {
   text-align: right;
   direction: rtl;
+}
+
+.noap-toastify-tap-hover:hover {
+  cursor: pointer;
+  box-shadow: 0px 2px 5px 0px #615a5a;
+  transition: box-shadow 0.15s ease-in;
 }
 
 .noap-toastify-toast {
@@ -75,11 +108,46 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  animation: noap-toastify-fade-in 0.5s ease-out;
+  overflow: hidden;
 }
 
-.noap-toastify-toast.noap-toastify-fade-out {
-  animation: noap-toastify-fade-out 0.5s ease-out forwards;
+.noap-toastify-anim-fade {
+  animation: noap-toastify-fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.noap-toastify-anim-fade-out {
+  animation: noap-toastify-fade-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.noap-toastify-anim-slide {
+  animation: noap-toastify-slide-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.noap-toastify-anim-slide-out {
+  animation: noap-toastify-slide-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.noap-toastify-anim-zoom {
+  animation: noap-toastify-zoom-in 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.noap-toastify-anim-zoom-out {
+  animation: noap-toastify-zoom-out 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.noap-toastify-anim-bounce {
+  animation: noap-toastify-bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.noap-toastify-anim-bounce-out {
+  animation: noap-toastify-bounce-out 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+.noap-toastify-anim-flip {
+  animation: noap-toastify-flip-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.noap-toastify-anim-flip-out {
+  animation: noap-toastify-flip-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .noap-toastify-title {
@@ -90,6 +158,15 @@
 
 .noap-toastify-message {
   font-size: 14px;
+  word-break: break-word;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.noap-toastify-light .noap-toastify-progress-bar {
+  background-color: #64748b;
 }
 
 .noap-toastify-progress-bar {
@@ -109,6 +186,8 @@
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
 }
 
 .noap-toastify-close svg {
@@ -121,6 +200,9 @@
   margin-right: 4px;
   margin-left: 4px;
   flex: 1;
+  display: flex;
+  min-width: 0;
+  flex-flow: column;
 }
 
 .noap-toastify-close:hover {
@@ -129,23 +211,46 @@
 }
 
 .noap-toastify-success {
-  background-color: #4caf50;
+  background-color: #22c55e;
 }
 
 .noap-toastify-error {
-  background-color: #f44336;
+  background-color: #ef4444;
 }
 
 .noap-toastify-warning {
-  background-color: #ff9800;
+  background-color: #f59e42;
 }
 
 .noap-toastify-default {
-  background-color: #333;
+  background-color: #64748b;
 }
 
 .noap-toastify-info {
-  background-color: #2196f3;
+  background-color: #3b82f6;
+}
+
+.noap-toastify-light {
+  background-color: #fff !important;
+  color: #222 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.noap-toastify-light .noap-toastify-title {
+  color: #222;
+}
+.noap-toastify-light .noap-toastify-message {
+  color: #333;
+}
+.noap-toastify-light .noap-toastify-close {
+  color: #444;
+}
+.noap-toastify-light .noap-toastify-close:hover {
+  color: #fff;
+  background: #222;
+}
+.noap-toastify-light .noap-toastify-icon {
+  background: #f3f4f6;
 }
 
 .noap-toastify-icon {
@@ -189,22 +294,147 @@
 @keyframes noap-toastify-fade-in {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-32px) scale(0.98);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(4px) scale(1.01);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
-
 @keyframes noap-toastify-fade-out {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(8px) scale(0.98);
   }
   to {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(32px) scale(0.95);
+  }
+}
+
+@keyframes noap-toastify-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(60px) scale(0.98);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-4px) scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes noap-toastify-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(8px) scale(0.98);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(60px) scale(0.95);
+  }
+}
+
+@keyframes noap-toastify-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes noap-toastify-zoom-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes noap-toastify-bounce-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%) scale(0.3);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(10%) scale(1.05);
+  }
+  80% {
+    transform: translateY(-5%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes noap-toastify-bounce-out {
+  20% {
+    transform: translateY(-10%) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100%) scale(0.3);
+  }
+}
+
+@keyframes noap-toastify-flip-in {
+  from {
+    opacity: 0;
+    transform: rotateY(90deg) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: rotateY(-10deg) scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) scale(1);
+  }
+}
+
+@keyframes noap-toastify-flip-out {
+  from {
+    opacity: 1;
+    transform: rotateY(0) scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: rotateY(10deg) scale(0.98);
+  }
+  to {
+    opacity: 0;
+    transform: rotateY(90deg) scale(0.95);
   }
 }
 

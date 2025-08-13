@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toastify – Modern Toast Notifications Demo</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50%' x='50%' text-anchor='middle' dominant-baseline='central' font-size='48'%3E%F0%9F%92%A5%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/@andreasnicolaou/toastify/dist/styles.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+      .theme-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+      .theme-icon {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+        transition: transform 0.3s ease;
+      }
+      .theme-toggle:hover .theme-icon {
+        transform: rotate(15deg);
+      }
+      #toastClearButton,
+      #toastButton {
+        border-radius: 999px;
+        font-size: 1rem;
+        padding: 0.375rem 1.1rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        border: none;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          box-shadow 0.2s;
+      }
+      #toastClearButton {
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border: 1px solid var(--bs-border-color-translucent, #dee2e6);
+      }
+      #toastClearButton:hover,
+      #toastClearButton:focus {
+        background: var(--bs-secondary-bg, #f1f3f5);
+        color: var(--bs-body-color);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      #toastButton {
+        background: var(--bs-primary);
+        color: var(--bs-btn-color, #fff);
+        border: 1px solid var(--bs-primary);
+      }
+      #toastButton:hover,
+      #toastButton:focus {
+        background: var(--bs-primary, #0d6efd);
+        color: var(--bs-btn-color, #fff);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+      }
+      @media (max-width: 600px) {
+        #toastClearButton,
+        #toastButton {
+          font-size: 0.95rem;
+          padding: 0.45rem 0.7rem;
+        }
+      }
+      .loading {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body style="font-family: Arial, sans-serif" class="bg-body-secondary loading">
+    <button
+      class="btn btn-outline-secondary theme-toggle"
+      id="theme-toggle"
+      type="button"
+      aria-label="Toggle dark mode"
+    >
+      <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>Toggle theme</title>
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    </button>
+    <div class="container-xl p-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h1 class="text-center mb-4" style="padding-left: 50px; padding-right: 50px">
+            Toastify – Modern Toast Notifications
+          </h1>
+          <div class="alert alert-info" role="alert">
+            <strong>Live Demo:</strong> Testing the published package from npm<br />
+            <strong>Package:</strong> <code class="font-monospace">@andreasnicolaou/toastify</code><br />
+            <strong>CDN Source:</strong>
+            <code class="font-monospace">https://unpkg.com/@andreasnicolaou/toastify/dist/index.umd.min.js</code>
+            <span id="cdn-status" class="ms-2" data-toggle="tooltip" title="Loading...">
+              <div class="spinner-border spinner-border-sm text-primary" aria-label="Loading CDN">
+                <span class="visually-hidden">Loading...</span>
+              </div> </span
+            ><br />
+            <strong>Global Variable:</strong> <code class="font-monospace">toastify</code>
+          </div>
+          <h2 class="text-body-emphasis border-bottom border-secondary border-2 pb-1 mb-3 mt-4">Try It Yourself</h2>
+          <div id="interactive-section">
+            <!-- Toastify demo form -->
+            <form id="toastify-form">
+              <div class="container-fluid px-0">
+                <div class="row g-3">
+                  <div class="col-md-12">
+                    <label for="toastPosition" class="form-label">Toast Position:</label>
+                    <select id="toastPosition" class="form-select form-select">
+                      <option value="top-left">Top Left</option>
+                      <option value="top-right" selected>Top Right</option>
+                      <option value="top-center">Top Center</option>
+                      <option value="top-center-full">Top Center Full</option>
+                      <option value="center">Center</option>
+                      <option value="bottom-left">Bottom Left</option>
+                      <option value="bottom-right">Bottom Right</option>
+                      <option value="bottom-center">Bottom Center</option>
+                      <option value="bottom-center-full">Bottom Center Full</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row g-3 mt-0">
+                  <div class="col-md-6">
+                    <label for="toastDirection" class="form-label">Toastify Direction:</label>
+                    <select id="toastDirection" class="form-select form-select">
+                      <option value="ltr" selected>LTR</option>
+                      <option value="rtl">RTL</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="progressBarDirection" class="form-label"
+                      >Progress Bar Direction:
+                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
+                    </label>
+                    <select id="progressBarDirection" class="form-select form-select">
+                      <option value="decrease" selected>Decreasing</option>
+                      <option value="increase">Increasing</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row g-3 mt-0">
+                  <div class="col-md-6">
+                    <label for="toastType" class="form-label">Toastify Type:</label>
+                    <select id="toastType" class="form-select form-select">
+                      <option value="default">Default</option>
+                      <option value="light">Light</option>
+                      <option value="success" selected>Success</option>
+                      <option value="warning">Warning</option>
+                      <option value="info">Info</option>
+                      <option value="error">Error</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="customClasses" class="form-label">Custom classes:</label>
+                    <input type="text" id="customClasses" class="form-control form-control" value="" />
+                  </div>
+                </div>
+                <div class="row g-3 mt-0">
+                  <div class="col-md-6">
+                    <label for="duration" class="form-label">Duration (ms):</label>
+                    <span class="form-text text-secondary ms-1" style="font-size: 0.97em">(0 = never expires)</span>
+                    <input type="number" id="duration" class="form-control form-control" value="3000" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="progressBarDuration" class="form-label">Progress Bar Duration (ms):</label>
+                    <input type="number" id="progressBarDuration" class="form-control form-control" value="100" />
+                  </div>
+                </div>
+                <div class="row g-3 mt-0">
+                  <div class="col-md-6">
+                    <label for="maxToasts" class="form-label">Max Toasts:</label>
+                    <input type="number" id="maxToasts" class="form-control form-control" value="5" />
+                  </div>
+                  <div class="col-md-6">
+                    <label for="animationType" class="form-label"
+                      >Animation Type:
+                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
+                    </label>
+                    <select id="animationType" class="form-select form-select">
+                      <option value="fade" selected>Fade</option>
+                      <option value="slide">Slide</option>
+                      <option value="zoom">Zoom</option>
+                      <option value="bounce">Bounce</option>
+                      <option value="flip">Flip</option>
+                      <option value="none">None (no animation)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row g-3 mt-0">
+                  <div class="col-md-12">
+                    <label for="toastTitle" class="form-label">Title:</label>
+                    <input
+                      type="text"
+                      id="toastTitle"
+                      class="form-control form-control"
+                      placeholder="Enter toast title..."
+                    />
+                  </div>
+                </div>
+                <div class="row g-3 mt-0">
+                  <div class="col-12">
+                    <label for="toastMessage" class="form-label">Message:</label>
+                    <textarea
+                      id="toastMessage"
+                      class="form-control form-control"
+                      rows="3"
+                      placeholder="Enter toast message..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="row g-3 mt-0">
+                  <div class="col-12 d-flex flex-wrap align-items-center gap-4">
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" id="withProgressBar" />
+                      <label class="form-check-label" for="withProgressBar">Show Progress Bar</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" id="isHtml" />
+                      <label class="form-check-label" for="isHtml"
+                        >Enable Html
+                        <span class="form-text text-secondary ms-1" style="font-size: 0.9em">(message)</span></label
+                      >
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" id="showIcons" checked />
+                      <label class="form-check-label" for="showIcons">Show Icons</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" id="closeButton" checked />
+                      <label class="form-check-label" for="closeButton">Show Close Button</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" id="tapToDismiss" />
+                      <label class="form-check-label" for="tapToDismiss">Tap to Dismiss</label>
+                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" class="form-check-input" id="newestOnTop" checked />
+                      <label class="form-check-label" for="newestOnTop">Newest on Top</label>
+                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-3 mt-0">
+                <div class="col-md-6">
+                  <button class="btn btn-light w-100" id="toastClearButton" type="button">Clear all toasts</button>
+                </div>
+                <div class="col-md-6">
+                  <button class="btn btn-primary w-100" id="toastButton" type="button">Open Toast</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div
+        id="loading-overlay"
+        class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+        style="background-color: rgba(var(--bs-body-bg-rgb), 0.95); z-index: 9999; backdrop-filter: blur(4px)"
+        aria-live="polite"
+      >
+        <div class="text-center">
+          <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="text-body-secondary">Initializing demo components...</div>
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/@andreasnicolaou/toastify/dist/index.umd.min.js"></script>
+    <!-- Bootstrap JS bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Helper to get element by id, available everywhere
+      const getElement = (id) => document.getElementById(id);
+
+      // All Toastify demo logic is wrapped in this function and only called after Toastify is loaded
+      function initToastifyDemo() {
+        let lastPosition = 'bottom-right';
+        let lastCustomClasses = '';
+
+        const getCheckedRadioValue = (name) => {
+          const checkedRadio = document.querySelector(`input[name="${name}"]:checked`);
+          return checkedRadio ? checkedRadio.value : '';
+        };
+
+        let toastrInstance = new toastify.ToastifyManager(getElement('toastPosition')?.value || 'top-right', {
+          duration: parseInt(getElement('duration')?.value || '3000', 10),
+          progressBarDuration: parseInt(getElement('progressBarDuration')?.value || '100', 10),
+          withProgressBar: getElement('withProgressBar')?.checked ?? false,
+          customClasses: getElement('customClasses')?.value || '',
+          isHtml: getElement('isHtml')?.checked ?? false,
+          showIcons: getElement('showIcons')?.checked ?? false,
+          closeButton: getElement('closeButton')?.checked ?? false,
+          direction: getElement('toastDirection')?.value || 'ltr',
+          maxToasts: parseInt(getElement('maxToasts')?.value || '5', 10),
+          animationType: getElement('animationType')?.value || 'fade',
+          tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
+          newestOnTop: getElement('newestOnTop')?.checked ?? false,
+          progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
+        });
+
+        function resetToastrInstance() {
+          document.querySelectorAll('.noap-toastify-container').forEach((toastContainer) => {
+            toastContainer.remove();
+          });
+          toastrInstance = new toastify.ToastifyManager(getElement('toastPosition')?.value || 'top-right', {
+            duration: parseInt(getElement('duration')?.value || '3000', 10),
+            progressBarDuration: parseInt(getElement('progressBarDuration')?.value || '100', 10),
+            withProgressBar: getElement('withProgressBar')?.checked ?? false,
+            customClasses: getElement('customClasses')?.value || '',
+            isHtml: getElement('isHtml')?.checked ?? false,
+            showIcons: getElement('showIcons')?.checked ?? false,
+            closeButton: getElement('closeButton')?.checked ?? false,
+            direction: getElement('toastDirection')?.value || 'ltr',
+            maxToasts: parseInt(getElement('maxToasts')?.value || '5', 10),
+            animationType: getElement('animationType')?.value || 'fade',
+            tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
+            newestOnTop: getElement('newestOnTop')?.checked ?? false,
+            progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
+          });
+        }
+
+        getElement('toastClearButton')?.addEventListener('click', resetToastrInstance);
+        getElement('maxToasts')?.addEventListener('change', resetToastrInstance);
+        getElement('newestOnTop')?.addEventListener('change', resetToastrInstance);
+        getElement('withProgressBar')?.addEventListener('change', updateProgressBarDirectionState);
+
+        function getRandomTitle() {
+          const titles = [
+            'Heads up!',
+            'Success!',
+            'Warning!',
+            'Info',
+            'Error',
+            'Notice',
+            'Hello!',
+            'Update',
+            'Reminder',
+            'Action Required',
+            '🎉 Congratulations!',
+            '🚀 Launch Complete',
+            '🔥 Hot News!',
+            '💡 Pro Tip',
+            '✅ All Done',
+            '⚠️ Caution',
+            '🔔 Alert',
+            '🥳 Party Time!',
+            '📢 Announcement',
+            '📝 Note',
+            '🤖 Robot Message',
+            '🌟 Featured',
+            '💬 New Message',
+            '🔒 Security',
+            '🕒 Time Update',
+            '📦 Package Ready',
+            '🎁 Gift Inside',
+            '🍀 Good Luck!',
+            '🌈 Rainbow Toast',
+            '🧩 Puzzle Solved',
+            '🎯 Target Hit',
+          ];
+          return titles[Math.floor(Math.random() * titles.length)];
+        }
+        function getRandomMessage() {
+          const messages = [
+            '🚀 Toastify can be added to Angular, React, Vue, Svelte, Next.js, and more!',
+            '🔒 Your account is secure.',
+            '📦 Your package has shipped.',
+            '🎶 Now playing: Your favorite song.',
+            '🧠 Smart move!',
+            '📝 Remember to save your work.',
+            '🧩 All pieces are in place.',
+            '💬 You received a new message.',
+            '✅ Task completed successfully.',
+            '💻 Use Toastify in your SPA, SSR, or static site—frameworks like Next.js, Nuxt, Astro, and more!',
+            '🔔 You have 3 new alerts.',
+            '🧩 Toastify is framework-agnostic: use it in any JS project!',
+            '💡 Did you know? You can customize this toast.',
+            '👋 Hello from Toastify!',
+            '🌍 Welcome, global user!',
+            '🎯 Bullseye! You nailed it.',
+            '⚠️ Please double-check your input.',
+            '🎁 You have unlocked a new reward.',
+            '🚀 Your rocket is ready for launch.',
+            '🍀 Wishing you the best of luck!',
+            '📢 Don’t miss our latest update.',
+            '📈 Your stats are up 20%.',
+            '🌈 Enjoy the colors of the day.',
+            '✨ Works with Angular, React, Vue, Svelte, and even plain JS!',
+            '🛠️ Maintenance scheduled for tonight.',
+            '🔥 Things are heating up!',
+            '😎 Toasts can be cool too.',
+            '🥳 Let’s celebrate your achievement!',
+            '🍕 Pizza party at 5 PM.',
+            '🌐 Toastify supports all modern frameworks: Angular, React, Vue, Svelte, and more.',
+            '🕒 The time is now 3:45 PM.',
+            '🌟 You’re a star! Keep shining.',
+            '💥 Boom! That was fast.',
+            '🔗 Integrate Toastify with your favorite framework: Angular, React, Vue, Svelte, Next.js, Nuxt, Astro, and more.',
+            '🦄 Unicorns are real in this toast.',
+            '🤖 This message was generated by AI.',
+            '📈 Your stats are up 20%.',
+            '✅ Task completed successfully.',
+            'An error occurred. Please try again.',
+            'Check your settings for more info.',
+            'This is just a test notification.',
+            'Everything looks good!',
+            '🎉 Welcome aboard! Enjoy your stay.',
+            'Action completed successfully.',
+            'Something just happened.',
+            'Please review the details.',
+            'Your changes have been saved.',
+            'You have a new notification.',
+            'This is a random toast message.',
+          ];
+          return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        getElement('toastButton')?.addEventListener('click', () => {
+          initToastr();
+          if (!toastrInstance) return;
+          const type = getElement('toastType')?.value;
+          let title = getElement('toastTitle')?.value.trim();
+          let message = getElement('toastMessage')?.value.trim();
+          if (!title) title = getRandomTitle();
+          if (!message) message = getRandomMessage();
+          if (type && typeof toastrInstance[type] === 'function') {
+            toastrInstance[type](title, message, {
+              duration: parseInt(getElement('duration')?.value || '3000', 10),
+              progressBarDuration: parseInt(getElement('progressBarDuration')?.value || '100', 10),
+              withProgressBar: getElement('withProgressBar')?.checked ?? false,
+              isHtml: getElement('isHtml')?.checked ?? false,
+              showIcons: getElement('showIcons')?.checked ?? false,
+              closeButton: getElement('closeButton')?.checked ?? false,
+              direction: getElement('toastDirection')?.value || 'ltr',
+              maxToasts: parseInt(getElement('maxToasts')?.value || '5', 10),
+              animationType: getElement('animationType')?.value || 'fade',
+              tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
+              newestOnTop: getElement('newestOnTop')?.checked ?? false,
+              progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
+            });
+          } else {
+            console.error('Invalid toast type:', type);
+          }
+        });
+
+        function initToastr() {
+          const position = getElement('toastPosition')?.value || 'bottom-right';
+          const customClasses = getElement('customClasses')?.value || '';
+          const animationType = getElement('animationType')?.value || 'fade';
+          if (!toastrInstance || lastPosition !== position || lastCustomClasses !== customClasses) {
+            document.querySelectorAll('.noap-toastify-container').forEach((e) => e.remove());
+            lastPosition = position;
+            lastCustomClasses = customClasses;
+            toastrInstance = new toastify.ToastifyManager(position, {
+              duration: parseInt(getElement('duration')?.value || '3000', 10),
+              progressBarDuration: parseInt(getElement('progressBarDuration')?.value || '100', 10),
+              withProgressBar: getElement('withProgressBar')?.checked ?? false,
+              customClasses: customClasses,
+              isHtml: getElement('isHtml')?.checked ?? false,
+              showIcons: getElement('showIcons')?.checked ?? false,
+              closeButton: getElement('closeButton')?.checked ?? false,
+              direction: getElement('toastDirection')?.value || 'ltr',
+              maxToasts: parseInt(getElement('maxToasts')?.value || '5', 10),
+              animationType: animationType,
+              tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
+              newestOnTop: getElement('newestOnTop')?.checked ?? false,
+              progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
+            });
+          }
+        }
+      }
+      function setThemeIcon(theme) {
+        const themeIcon = document.querySelector('.theme-icon');
+        if (!themeIcon) return;
+        if (theme === 'light') {
+          themeIcon.innerHTML =
+            '<title>Toggle theme</title><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+        } else {
+          themeIcon.innerHTML =
+            '<title>Toggle theme</title><circle cx="12" cy="12" r="5"/><path d="m15 1 2 2-2 2M6 11l-2-2 2-2M20 11l2 2-2 2M9 19l-2 2 2 2M12 3V1M12 23v-2M3 12H1M23 12h-2"/>';
+        }
+      }
+      function applyTheme(theme) {
+        document.body.setAttribute('data-bs-theme', theme);
+        setThemeIcon(theme);
+        localStorage.setItem('theme', theme);
+      }
+
+      function updateProgressBarDirectionState() {
+        if (!getElement('withProgressBar')) {
+          return;
+        }
+        getElement('duration').disabled = !!getElement('withProgressBar').checked;
+        getElement('progressBarDirection').disabled = !getElement('withProgressBar').checked;
+        getElement('progressBarDuration').disabled = !getElement('withProgressBar').checked;
+      }
+
+      getElement('theme-toggle').addEventListener('click', function () {
+        const body = document.body;
+        const currentTheme = body.getAttribute('data-bs-theme') || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        applyTheme(newTheme);
+      });
+      document.addEventListener('DOMContentLoaded', function () {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+      });
+
+      const hideLoadingOverlay = (onDone) => {
+        setTimeout(() => {
+          const loadingOverlay = getElement('loading-overlay');
+          if (loadingOverlay) {
+            loadingOverlay.style.transition = 'opacity 0.3s ease-out';
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => {
+              loadingOverlay.remove();
+              document.body.classList.remove('loading');
+              if (typeof onDone === 'function') onDone();
+            }, 300);
+          } else {
+            if (typeof onDone === 'function') onDone();
+          }
+        }, 1500);
+      };
+
+      function start() {
+        if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+          new bootstrap.Tooltip(document.body, { selector: '[data-toggle="tooltip"]' });
+        }
+        const cdnStatus = getElement('cdn-status');
+        try {
+          if (typeof toastify !== 'undefined' && typeof toastify.ToastifyManager === 'function') {
+            cdnStatus.innerHTML = `
+              <svg class="text-success" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+              </svg>
+            `;
+            cdnStatus.setAttribute('title', 'CDN loaded successfully.');
+            hideLoadingOverlay(() => {
+              initToastifyDemo();
+            });
+          } else {
+            cdnStatus.innerHTML = `
+              <svg class="text-danger" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+              </svg>
+            `;
+            cdnStatus.setAttribute('title', 'CDN failed to load Toastify.');
+            hideLoadingOverlay(() => {
+              initToastifyDemo();
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load Toastify:', error);
+          cdnStatus.innerHTML = `
+            <svg class="text-danger" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+            </svg>
+          `;
+          cdnStatus.setAttribute('title', 'Error loading Toastify.');
+          hideLoadingOverlay(() => {
+            initToastifyDemo();
+          });
+        }
+      }
+      start();
+      updateProgressBarDirectionState();
+    </script>
+  </body>
+</html>

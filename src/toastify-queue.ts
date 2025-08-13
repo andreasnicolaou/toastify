@@ -1,10 +1,11 @@
-import { Toastify } from './toastify';
 import { ToastifyOptions, ToastifyType } from './index';
+import { Toastify } from './toastify';
 
 export class ToastifyQueue {
   private activeToasts: number = 0;
   private readonly container: HTMLElement;
   private readonly maxToasts: number;
+  private readonly newestOnTop: boolean | undefined;
   private readonly queue: Array<{
     title: string;
     message: string;
@@ -13,9 +14,10 @@ export class ToastifyQueue {
     create: (onComplete: () => void) => void;
   }> = [];
 
-  constructor(container: HTMLElement, maxToasts: number) {
+  constructor(container: HTMLElement, maxToasts: number, newestOnTop: boolean | undefined) {
     this.container = container;
     this.maxToasts = maxToasts;
+    this.newestOnTop = newestOnTop;
   }
 
   /**
@@ -25,6 +27,7 @@ export class ToastifyQueue {
    * @param type - The type of the toast (e.g., success, error, etc.).
    * @param options - Customization options for the toast (optional).
    * @memberof ToastifyQueue
+   * @author Andreas Nicolaou
    */
   public enqueue(
     title: string,
@@ -34,7 +37,7 @@ export class ToastifyQueue {
   ): void {
     // If there is space, display the toast immediately
     if (this.activeToasts < this.maxToasts) {
-      Toastify.create(this.container, this.maxToasts, title, message, type, options, () => {
+      Toastify.create(this.container, this.maxToasts, this.newestOnTop, title, message, type, options, () => {
         this.activeToasts--; // Decrement active toasts when the toast is removed
         this.processQueue(); // Check the queue for the next toast
       });
@@ -47,7 +50,7 @@ export class ToastifyQueue {
         type,
         options,
         create: (onComplete) => {
-          Toastify.create(this.container, this.maxToasts, title, message, type, options, onComplete);
+          Toastify.create(this.container, this.maxToasts, this.newestOnTop, title, message, type, options, onComplete);
         },
       });
     }
@@ -56,6 +59,7 @@ export class ToastifyQueue {
   /**
    * Processes the queue to display the next toast when space becomes available.
    * @memberof ToastifyQueue
+   * @author Andreas Nicolaou
    */
   private processQueue(): void {
     // If there is space and the queue is not empty, display the next toast

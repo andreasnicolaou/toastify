@@ -1,5 +1,7 @@
+import './styles.css';
 import { ToastifyContainer } from './toastify-container';
 import { ToastifyQueue } from './toastify-queue';
+export type ToastifyAnimationType = 'fade' | 'slide' | 'zoom' | 'bounce' | 'flip' | 'none';
 export interface ToastifyOptions {
   duration?: number;
   isHtml?: boolean;
@@ -8,6 +10,9 @@ export interface ToastifyOptions {
   closeButton?: boolean;
   direction?: 'ltr' | 'rtl';
   showIcons?: boolean;
+  animationType?: ToastifyAnimationType;
+  tapToDismiss?: boolean;
+  progressBarDirection?: 'decrease' | 'increase';
 }
 
 export type ToastifyPosition =
@@ -16,10 +21,12 @@ export type ToastifyPosition =
   | 'bottom-left'
   | 'bottom-right'
   | 'top-center'
+  | 'top-center-full'
   | 'bottom-center'
+  | 'bottom-center-full'
   | 'center';
 
-export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default';
+export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default' | 'light';
 /**
  * Initializes a new ToastifyManager instance to manage toast notifications.
  * @param position - The position where the toast container should be displayed (e.g., top-right, bottom-left).
@@ -33,6 +40,12 @@ export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default';
  *   - closeButton (optional): Whether to show a close button on the toast (default is false).
  *   - showIcons (optional): Whether to display icons next to the toast message (default is true).
  *   - direction (optional): The direction of the text within the toast (default is 'ltr', left-to-right).
+ *   - animationType (optional): The type of animation for the toast (default is 'fade', use 'none' for no animation).
+ *   - progressBarDirection (optional): The direction of the progress bar animation (default is 'decrease').
+ * @throws Error if called in a non-browser environment.
+ * @returns A new instance of ToastifyManager.
+ * @memberof ToastifyManager
+ * @author Andreas Nicolaou
  */
 export class ToastifyManager {
   private readonly options!: ToastifyOptions;
@@ -42,10 +55,14 @@ export class ToastifyManager {
     {
       maxToasts,
       customClasses,
+      newestOnTop,
       ...options
-    }: ToastifyOptions & { maxToasts?: number; customClasses?: string } = Object.create(Object.prototype)
+    }: ToastifyOptions & { maxToasts?: number; customClasses?: string; newestOnTop?: boolean } = Object.create(
+      Object.prototype
+    )
   ) {
     if (typeof document === 'undefined') {
+      /* istanbul ignore next */
       throw new Error('document is not available. Toastify can only be used in a browser environment.');
     }
     this.options = {
@@ -56,10 +73,13 @@ export class ToastifyManager {
       closeButton: false,
       showIcons: true,
       direction: 'ltr',
+      animationType: 'fade',
+      tapToDismiss: false,
+      progressBarDirection: 'decrease',
       ...options,
     };
     const toastifyContainer = new ToastifyContainer(position, customClasses);
-    this.toastifyQueue = new ToastifyQueue(toastifyContainer.element, maxToasts ?? 5);
+    this.toastifyQueue = new ToastifyQueue(toastifyContainer.element, maxToasts ?? 5, newestOnTop);
   }
 
   /**
@@ -69,6 +89,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public default(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'default', { ...this.options, ...options });
@@ -81,6 +102,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public error(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'error', { ...this.options, ...options });
@@ -93,9 +115,23 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public info(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'info', { ...this.options, ...options });
+  }
+
+  /**
+   * Displays a light toast notification.
+   * @param title - The title of the toast.
+   * @param message - The message content of the toast.
+   * @param options - Customization for this individual toast. These options are merged with the defaults
+   *                  set on ToastifyManager, and can be overriden individually
+   * @memberof ToastifyManager
+   * @author Andreas Nicolaou
+   */
+  public light(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
+    this.toastifyQueue.enqueue(title, message, 'light', { ...this.options, ...options });
   }
 
   /**
@@ -105,6 +141,7 @@ export class ToastifyManager {
    * @param options - Customization for this individual toast. These options are merged with the defaults
    *                  set on ToastifyManager, and can be overriden individually.
    * @memberof ToastifyManager
+   * @author Andreas Nicolaou
    */
   public success(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
     this.toastifyQueue.enqueue(title, message, 'success', { ...this.options, ...options });

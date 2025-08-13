@@ -1,26 +1,63 @@
 {
   "name": "@andreasnicolaou/toastify",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Lightweight and customizable toast notifications for web applications.",
-  "main": "dist/index.js",
-  "private": false,
-  "types": "dist/types/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "browser": "dist/index.umd.min.js",
+  "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "dist",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc && node copy-styles",
-    "test": "jest",
+    "build": "rollup -c",
     "format": "prettier --write .",
-    "lint": "eslint --fix"
+    "format:check": "prettier --check .",
+    "lint": "eslint --fix",
+    "test": "jest",
+    "test:ci": "cross-env JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --reporters=default --reporters=jest-junit",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:bundle": "npx bundlewatch"
+  },
+  "bundlewatch": {
+    "files": [
+      {
+        "path": "dist/index.js",
+        "maxSize": "4kB",
+        "compression": "gzip"
+      },
+      {
+        "path": "dist/index.cjs",
+        "maxSize": "4kB",
+        "compression": "gzip"
+      },
+      {
+        "path": "dist/index.umd.js",
+        "maxSize": "4kB",
+        "compression": "gzip"
+      },
+      {
+        "path": "dist/index.umd.min.js",
+        "maxSize": "3kB",
+        "compression": "gzip"
+      }
+    ]
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/andreasnicolaou/toastify.git"
   },
-  "homepage": "https://github.com/andreasnicolaou/toastify#readme",
+  "homepage": "https://andreasnicolaou.github.io/toastify/",
   "bugs": {
     "url": "https://github.com/andreasnicolaou/toastify/issues"
   },
@@ -28,7 +65,10 @@
     "type": "github",
     "url": "https://github.com/sponsors/andreasnicolaou"
   },
-  "author": "Andreas Nicolaou <anicolaou66@gmail.com>",
+  "author": {
+    "name": "Andreas Nicolaou",
+    "email": "anicolaou66@gmail.com"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=16"
@@ -43,24 +83,39 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/dist/"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@testing-library/jest-dom": "^6.6.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
+    "@types/node": "^24.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "bundlewatch": "^0.4.1",
+    "cross-env": "^10.0.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-prettier": "^5.5.4",
     "globals": "^16.3.0",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
-    "ncp": "^2.0.0",
+    "jest-junit": "^16.0.0",
     "prettier": "3.6.2",
-    "ts-jest": "^29.4.0",
+    "prettier-plugin-organize-imports": "^4.2.0",
+    "rollup": "^4.18.0",
+    "rollup-plugin-dts": "^6.2.1",
+    "rollup-plugin-postcss": "^4.0.2",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
+    "tslib": "^2.6.2",
     "typescript": "^5.8.3"
   },
   "keywords": [
