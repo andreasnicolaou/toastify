@@ -366,4 +366,51 @@ describe('Toastify', () => {
 
     document.body.removeChild(htmlContainer);
   });
+
+  test('removes oldest toast if maxToasts exceeded and not hovering', () => {
+    const htmlContainer = document.createElement('div');
+    document.body.appendChild(htmlContainer);
+    for (let i = 0; i < 5; i++) {
+      Toastify.create(
+        htmlContainer,
+        5,
+        false,
+        `Toast${i}`,
+        `Message${i}`,
+        'info',
+        {
+          direction: 'ltr',
+          isHtml: false,
+          showIcons: true,
+          withProgressBar: false,
+          duration: 1000,
+          closeButton: false,
+        },
+        jest.fn()
+      );
+    }
+    const firstToast = htmlContainer.firstChild as HTMLElement;
+    expect(firstToast.classList.contains('noap-toastify-hovering')).toBe(false);
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      'Overflow!',
+      'This should remove the oldest.',
+      'info',
+      {
+        direction: 'ltr',
+        isHtml: false,
+        showIcons: true,
+        withProgressBar: false,
+        duration: 1000,
+        closeButton: false,
+      },
+      jest.fn()
+    );
+    jest.advanceTimersByTime(500);
+    expect(htmlContainer.childElementCount).toBe(5);
+    expect(Array.from(htmlContainer.children)).not.toContain(firstToast);
+    document.body.removeChild(htmlContainer);
+  });
 });

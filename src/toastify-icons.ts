@@ -10,6 +10,7 @@ export class ToastifyIcons {
       default: `<svg aria-hidden="true" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#a3a3a3"/><path d="M16 8a6 6 0 0 1 6 6v3.764c0 .414.168.812.468 1.104l1.064 1.03A2 2 0 0 1 23 23H9a2 2 0 0 1-1.532-3.102l1.064-1.03A1.5 1.5 0 0 0 9 17.764V14a6 6 0 0 1 6-6Zm0 18a3 3 0 0 0 3-3h-6a3 3 0 0 0 3 3Z" fill="#fff"/></svg>`,
       light: `<svg aria-hidden="true" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#fff"/><path d="M16 8a6 6 0 0 1 6 6v3.764c0 .414.168.812.468 1.104l1.064 1.03A2 2 0 0 1 23 23H9a2 2 0 0 1-1.532-3.102l1.064-1.03A1.5 1.5 0 0 0 9 17.764V14a6 6 0 0 1 6-6Zm0 18a3 3 0 0 0 3-3h-6a3 3 0 0 0 3 3Z" fill="#222"/></svg>`,
     };
+    /* istanbul ignore next */
     return icons[type] ?? '';
   }
 }

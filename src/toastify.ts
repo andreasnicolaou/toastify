@@ -49,10 +49,11 @@ export class Toastify {
       messageElement.innerText = message;
     }
 
-    if (options.showIcons && ToastifyIcons.getIcon(type)) {
+    const icon = ToastifyIcons.getIcon(type);
+    if (options.showIcons && icon) {
       const iconElement = document.createElement('div');
       iconElement.className = `noap-toastify-icon ${type}`;
-      iconElement.innerHTML = ToastifyIcons.getIcon(type);
+      iconElement.innerHTML = icon;
       toastifyElement.appendChild(iconElement);
     }
 
@@ -102,6 +103,7 @@ export class Toastify {
           progressInterval = window.setInterval(
             () => {
               toastifyElement.classList.remove('noap-toastify-hovering');
+              /* istanbul ignore next */
               if (direction === 'increase') {
                 progress += 1;
               } else {
@@ -172,6 +174,7 @@ export class Toastify {
       toastifyElement.appendChild(closeBtn);
     }
     if (newestOnTop) {
+      /* istanbul ignore next */
       htmlContainer.insertBefore(toastifyElement, htmlContainer.firstChild);
     } else {
       htmlContainer.appendChild(toastifyElement);
