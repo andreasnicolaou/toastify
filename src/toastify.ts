@@ -109,10 +109,10 @@ export class Toastify {
       });
 
       toastifyElement.addEventListener('mouseleave', () => {
+        toastifyElement.classList.remove('noap-toastify-hovering');
         if (!progressInterval) {
           progressInterval = window.setInterval(
             () => {
-              toastifyElement.classList.remove('noap-toastify-hovering');
               /* istanbul ignore next */
               if (direction === 'increase') {
                 progress += 1;

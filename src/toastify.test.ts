@@ -229,7 +229,7 @@ describe('Toastify', () => {
     toastElement.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     expect(toastifyElement?.classList.contains('noap-toastify-hovering')).toBe(true);
     toastElement.dispatchEvent(new MouseEvent('mouseleave'));
-    expect(!toastifyElement?.classList.contains('noap-toastify-hovering')).toBe(false);
+    expect(toastifyElement?.classList.contains('noap-toastify-hovering')).toBe(false);
     jest.advanceTimersByTime(10000);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
