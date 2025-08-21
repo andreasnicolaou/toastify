@@ -1,9 +1,10 @@
 import { ToastifyOptions, ToastifyType } from './index';
 import { Toastify } from './toastify';
+import { ToastifyContainer } from './toastify-container';
 
 export class ToastifyQueue {
   private activeToasts: number = 0;
-  private readonly container: HTMLElement;
+  private readonly container: ToastifyContainer;
   private readonly maxToasts: number;
   private readonly newestOnTop: boolean | undefined;
   private readonly queue: Array<{
@@ -14,7 +15,7 @@ export class ToastifyQueue {
     create: (onComplete: () => void) => void;
   }> = [];
 
-  constructor(container: HTMLElement, maxToasts: number, newestOnTop: boolean | undefined) {
+  constructor(container: ToastifyContainer, maxToasts: number, newestOnTop: boolean | undefined) {
     this.container = container;
     this.maxToasts = maxToasts;
     this.newestOnTop = newestOnTop;
@@ -37,7 +38,7 @@ export class ToastifyQueue {
   ): void {
     // If there is space, display the toast immediately
     if (this.activeToasts < this.maxToasts) {
-      Toastify.create(this.container, this.maxToasts, this.newestOnTop, title, message, type, options, () => {
+      Toastify.create(this.container, this.maxToasts, this.newestOnTop, { title, message, type }, options, () => {
         this.activeToasts--; // Decrement active toasts when the toast is removed
         this.processQueue(); // Check the queue for the next toast
       });
@@ -50,7 +51,14 @@ export class ToastifyQueue {
         type,
         options,
         create: (onComplete) => {
-          Toastify.create(this.container, this.maxToasts, this.newestOnTop, title, message, type, options, onComplete);
+          Toastify.create(
+            this.container,
+            this.maxToasts,
+            this.newestOnTop,
+            { title, message, type },
+            options,
+            onComplete
+          );
         },
       });
     }

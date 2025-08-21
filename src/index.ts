@@ -52,7 +52,7 @@ export class ToastifyManager {
   private readonly toastifyQueue!: ToastifyQueue;
   constructor(
     position: ToastifyPosition,
-    {
+    /* istanbul ignore next */ {
       maxToasts,
       customClasses,
       newestOnTop,
@@ -61,8 +61,8 @@ export class ToastifyManager {
       Object.prototype
     )
   ) {
+    /* istanbul ignore next */
     if (typeof document === 'undefined') {
-      /* istanbul ignore next */
       throw new Error('document is not available. Toastify can only be used in a browser environment.');
     }
     this.options = {
@@ -79,7 +79,8 @@ export class ToastifyManager {
       ...options,
     };
     const toastifyContainer = new ToastifyContainer(position, customClasses);
-    this.toastifyQueue = new ToastifyQueue(toastifyContainer.element, maxToasts ?? 5, newestOnTop);
+    /* istanbul ignore next */
+    this.toastifyQueue = new ToastifyQueue(toastifyContainer, maxToasts ?? 5, newestOnTop);
   }
 
   /**

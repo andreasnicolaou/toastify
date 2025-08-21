@@ -29,6 +29,15 @@ describe('ToastifyManager', () => {
     });
   });
 
+  test('calls all toast type methods', () => {
+    expect(() => toastifyManager.default('title', 'msg')).not.toThrow();
+    expect(() => toastifyManager.error('title', 'msg')).not.toThrow();
+    expect(() => toastifyManager.info('title', 'msg')).not.toThrow();
+    expect(() => toastifyManager.light('title', 'msg')).not.toThrow();
+    expect(() => toastifyManager.success('title', 'msg')).not.toThrow();
+    expect(() => toastifyManager.warning('title', 'msg')).not.toThrow();
+  });
+
   test('should initialize with default options', () => {
     const defaultOptions = {
       duration: 3000,
@@ -44,7 +53,7 @@ describe('ToastifyManager', () => {
     };
     expect(toastifyManager).toBeDefined();
     expect(ToastifyContainer).toHaveBeenCalledWith('top-right', undefined);
-    expect(ToastifyQueue).toHaveBeenCalledWith(expect.any(HTMLElement), 5, undefined);
+    expect(ToastifyQueue).toHaveBeenCalledWith({ element: expect.any(HTMLElement) }, 5, undefined);
     expect(toastifyManager).toMatchObject({ options: defaultOptions });
   });
 

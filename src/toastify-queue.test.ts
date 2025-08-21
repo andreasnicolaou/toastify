@@ -1,14 +1,15 @@
 import { Toastify } from './toastify';
+import { ToastifyContainer } from './toastify-container';
 import { ToastifyQueue } from './toastify-queue';
 
 describe('ToastifyQueue', () => {
-  let htmlContainer!: HTMLElement;
+  let htmlContainer!: ToastifyContainer;
   let toastifyQueue!: ToastifyQueue;
   let mockToastifyCreate!: jest.Mock;
 
   beforeEach(() => {
-    htmlContainer = document.createElement('div');
-    document.body.appendChild(htmlContainer);
+    htmlContainer = new ToastifyContainer('top-right');
+    document.body.appendChild(htmlContainer.element);
     toastifyQueue = new ToastifyQueue(htmlContainer, 3, false);
     mockToastifyCreate = jest.fn();
     Toastify.create = mockToastifyCreate;
@@ -43,9 +44,9 @@ describe('ToastifyQueue', () => {
     expect(mockToastifyCreate).toHaveBeenCalledTimes(3);
     expect(toastifyQueue['queue'].length).toBe(1);
 
-    const callback1 = mockToastifyCreate.mock.calls[0][7];
-    const callback2 = mockToastifyCreate.mock.calls[1][7];
-    const callback3 = mockToastifyCreate.mock.calls[2][7];
+    const callback1 = mockToastifyCreate.mock.calls[0][5];
+    const callback2 = mockToastifyCreate.mock.calls[1][5];
+    const callback3 = mockToastifyCreate.mock.calls[2][5];
 
     callback1();
     expect(toastifyQueue['activeToasts']).toBe(3);
@@ -61,9 +62,9 @@ describe('ToastifyQueue', () => {
     toastifyQueue.enqueue('Error!', 'Something went wrong, please try again.', 'error');
     toastifyQueue.enqueue('Warning!', 'This action might have unintended consequences.', 'warning');
 
-    const callback1 = mockToastifyCreate.mock.calls[0][7];
-    const callback2 = mockToastifyCreate.mock.calls[1][7];
-    const callback3 = mockToastifyCreate.mock.calls[2][7];
+    const callback1 = mockToastifyCreate.mock.calls[0][5];
+    const callback2 = mockToastifyCreate.mock.calls[1][5];
+    const callback3 = mockToastifyCreate.mock.calls[2][5];
 
     callback1();
     callback2();
@@ -83,7 +84,7 @@ describe('ToastifyQueue', () => {
   });
 
   test('processQueue processes a queued toast when space is available', () => {
-    const htmlContainer = document.createElement('div');
+    const htmlContainer = new ToastifyContainer('top-right');
     const toastifyQueue = new ToastifyQueue(htmlContainer, 2, false);
     toastifyQueue['activeToasts'] = 0;
     const mockCreate = jest.fn((cb) => cb && cb());
