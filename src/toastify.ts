@@ -1,4 +1,5 @@
-import { ToastifyOptions, ToastifyType } from './index';
+import { ToastifyOptions, ToastifyPosition, ToastifyType } from './index';
+import { ToastifyContainer } from './toastify-container';
 import { ToastifyIcons } from './toastify-icons';
 
 export class Toastify {
@@ -8,25 +9,32 @@ export class Toastify {
    * @author Andreas Nicolaou
    */
   public static create(
-    htmlContainer: HTMLElement,
+    container: ToastifyContainer,
     maxToasts: number,
     newestOnTop: boolean | undefined,
-    title: string,
-    message: string,
-    type: ToastifyType,
+    toast: {
+      title: string;
+      message: string;
+      type: ToastifyType;
+    },
     options: ToastifyOptions,
     onComplete: () => void
   ): void {
+    const { title, message, type } = toast;
+    const htmlContainer: HTMLElement = container.element;
+    const positionContainer: ToastifyPosition = container.containerPosition;
     const toastifyElement: HTMLDivElement = document.createElement('div');
     const animationType = options.animationType || 'fade';
-    toastifyElement.className = `noap-toastify-toast noap-toastify-${options.direction} noap-toastify-anim-${animationType}`;
+    const from = Toastify.getAnimationSuffix(animationType, positionContainer);
+
+    toastifyElement.className = `noap-toastify-toast noap-toastify-${options.direction} noap-toastify-anim-${animationType}${from}`;
     toastifyElement.classList.add(`noap-toastify-${type}`);
     if (options.tapToDismiss) {
       toastifyElement.classList.add('noap-toastify-tap-hover');
       toastifyElement.addEventListener('click', () => {
-        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
+        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
         setTimeout(() => {
-          if (toastifyElement.parentElement === htmlContainer) {
+          if (htmlContainer.contains(toastifyElement)) {
             htmlContainer.removeChild(toastifyElement);
             onComplete();
           }
@@ -49,7 +57,7 @@ export class Toastify {
       messageElement.innerText = message;
     }
 
-    const icon = ToastifyIcons.getIcon(type);
+    const icon = ToastifyIcons.getToastIcon(type);
     if (options.showIcons && icon) {
       const iconElement = document.createElement('div');
       iconElement.className = `noap-toastify-icon ${type}`;
@@ -80,10 +88,12 @@ export class Toastify {
           progressBar!.style.width = `${progress}%`;
           if ((direction === 'increase' && progress >= 100) || (direction === 'decrease' && progress <= 0)) {
             clearInterval(progressInterval!);
-            toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
+            toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
             setTimeout(() => {
-              htmlContainer.removeChild(toastifyElement);
-              onComplete();
+              if (htmlContainer.contains(toastifyElement)) {
+                htmlContainer.removeChild(toastifyElement);
+                onComplete();
+              }
             }, 500);
           }
         },
@@ -99,10 +109,10 @@ export class Toastify {
       });
 
       toastifyElement.addEventListener('mouseleave', () => {
+        toastifyElement.classList.remove('noap-toastify-hovering');
         if (!progressInterval) {
           progressInterval = window.setInterval(
             () => {
-              toastifyElement.classList.remove('noap-toastify-hovering');
               /* istanbul ignore next */
               if (direction === 'increase') {
                 progress += 1;
@@ -112,10 +122,12 @@ export class Toastify {
               progressBar!.style.width = `${progress}%`;
               if ((direction === 'increase' && progress >= 100) || (direction === 'decrease' && progress <= 0)) {
                 clearInterval(progressInterval!);
-                toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
+                toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
                 setTimeout(() => {
-                  htmlContainer.removeChild(toastifyElement);
-                  onComplete();
+                  if (htmlContainer.contains(toastifyElement)) {
+                    htmlContainer.removeChild(toastifyElement);
+                    onComplete();
+                  }
                 }, 500);
               }
             },
@@ -128,10 +140,12 @@ export class Toastify {
     if (!options.withProgressBar && options.duration! > 0) {
       const startAutoClose = (): void => {
         autoCloseTimeout = window.setTimeout(() => {
-          toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
+          toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
           setTimeout(() => {
-            htmlContainer.removeChild(toastifyElement);
-            onComplete();
+            if (htmlContainer.contains(toastifyElement)) {
+              htmlContainer.removeChild(toastifyElement);
+              onComplete();
+            }
           }, 500);
         }, options.duration);
       };
@@ -161,14 +175,14 @@ export class Toastify {
     if (options.closeButton) {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'noap-toastify-close';
-      closeBtn.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
-        </svg>`;
+      closeBtn.innerHTML = ToastifyIcons.getCloseIcon();
       closeBtn.onclick = (): void => {
-        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out`);
+        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
         setTimeout(() => {
-          htmlContainer.removeChild(toastifyElement);
-          onComplete();
+          if (htmlContainer.contains(toastifyElement)) {
+            htmlContainer.removeChild(toastifyElement);
+            onComplete();
+          }
         }, 200);
       };
       toastifyElement.appendChild(closeBtn);
@@ -184,13 +198,34 @@ export class Toastify {
       for (const element of Array.from(htmlContainer.children)) {
         const oldestToast = element as HTMLElement;
         if (!oldestToast.classList.contains('noap-toastify-hovering')) {
-          oldestToast.classList.add(`noap-toastify-anim-${animationType}-out`);
+          oldestToast.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
           setTimeout(() => {
-            htmlContainer.removeChild(oldestToast);
+            if (htmlContainer.contains(oldestToast)) {
+              htmlContainer.removeChild(oldestToast);
+            }
           }, 500);
           break;
         }
       }
+    }
+  }
+
+  private static getAnimationSuffix(animationType: string, position: ToastifyPosition | null): string {
+    if (animationType !== 'slide') return '';
+    switch (position) {
+      case 'top-left':
+      case 'bottom-left':
+        return '-left';
+      case 'bottom-center':
+      case 'bottom-center-full':
+        return '-bottom';
+      case 'top-center':
+      case 'top-center-full':
+        return '-top';
+      case 'center':
+        return '-center';
+      default:
+        return '';
     }
   }
 }
