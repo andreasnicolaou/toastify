@@ -95,7 +95,7 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@testing-library/jest-dom": "^6.6.4",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.2.0",
+    "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "bundlewatch": "^0.4.1",
