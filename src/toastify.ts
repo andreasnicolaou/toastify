@@ -222,7 +222,7 @@ export class Toastify {
   }
 
   private static getAnimationSuffix(animationType: string, position: ToastifyPosition | null): string {
-    if (animationType !== 'slide') return '';
+    if (animationType !== 'slide' && animationType !== 'roll' && animationType !== 'lightspeed') return '';
     switch (position) {
       case 'top-left':
       case 'bottom-left':
