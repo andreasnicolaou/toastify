@@ -102,52 +102,99 @@
   background-color: #333;
   color: #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.5s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: opacity, transform;
   pointer-events: auto;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .noap-toastify-anim-fade {
-  animation: noap-toastify-fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: noap-toastify-fade-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .noap-toastify-anim-fade-out {
-  animation: noap-toastify-fade-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: noap-toastify-fade-out 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* Bottom-specific fade animations */
+.noap-toastify-bottom-left .noap-toastify-anim-fade,
+.noap-toastify-bottom-right .noap-toastify-anim-fade,
+.noap-toastify-bottom-center .noap-toastify-anim-fade,
+.noap-toastify-bottom-center-full .noap-toastify-anim-fade {
+  animation: noap-toastify-fade-in-bottom 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.noap-toastify-bottom-left .noap-toastify-anim-fade-out,
+.noap-toastify-bottom-right .noap-toastify-anim-fade-out,
+.noap-toastify-bottom-center .noap-toastify-anim-fade-out,
+.noap-toastify-bottom-center-full .noap-toastify-anim-fade-out {
+  animation: noap-toastify-fade-out-bottom 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 .noap-toastify-anim-slide {
-  animation: noap-toastify-slide 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: noap-toastify-slide 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .noap-toastify-anim-slide-out {
-  animation: noap-toastify-slide-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: noap-toastify-slide-out 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 .noap-toastify-anim-zoom {
-  animation: noap-toastify-zoom-in 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: noap-toastify-zoom-in 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .noap-toastify-anim-zoom-out {
-  animation: noap-toastify-zoom-out 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: noap-toastify-zoom-out 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.noap-toastify-bottom-left .noap-toastify-anim-zoom,
+.noap-toastify-bottom-right .noap-toastify-anim-zoom,
+.noap-toastify-bottom-center .noap-toastify-anim-zoom,
+.noap-toastify-bottom-center-full .noap-toastify-anim-zoom {
+  animation: noap-toastify-zoom-in-bottom 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.noap-toastify-bottom-left .noap-toastify-anim-zoom-out,
+.noap-toastify-bottom-right .noap-toastify-anim-zoom-out,
+.noap-toastify-bottom-center .noap-toastify-anim-zoom-out,
+.noap-toastify-bottom-center-full .noap-toastify-anim-zoom-out {
+  animation: noap-toastify-zoom-out-bottom 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 .noap-toastify-anim-bounce {
-  animation: noap-toastify-bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  animation: noap-toastify-bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .noap-toastify-anim-bounce-out {
-  animation: noap-toastify-bounce-out 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  animation: noap-toastify-bounce-out 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.noap-toastify-bottom-left .noap-toastify-anim-bounce,
+.noap-toastify-bottom-right .noap-toastify-anim-bounce,
+.noap-toastify-bottom-center .noap-toastify-anim-bounce,
+.noap-toastify-bottom-center-full .noap-toastify-anim-bounce {
+  animation: noap-toastify-bounce-in-bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.noap-toastify-bottom-left .noap-toastify-anim-bounce-out,
+.noap-toastify-bottom-right .noap-toastify-anim-bounce-out,
+.noap-toastify-bottom-center .noap-toastify-anim-bounce-out,
+.noap-toastify-bottom-center-full .noap-toastify-anim-bounce-out {
+  animation: noap-toastify-bounce-out-bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .noap-toastify-anim-flip {
-  animation: noap-toastify-flip-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: noap-toastify-flip-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .noap-toastify-anim-flip-out {
-  animation: noap-toastify-flip-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: noap-toastify-flip-out 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 /* Slide animations extra */
@@ -328,11 +375,7 @@
 @keyframes noap-toastify-fade-in {
   from {
     opacity: 0;
-    transform: translateY(-32px) scale(0.98);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(4px) scale(1.01);
+    transform: translateY(-20px) scale(0.95);
   }
   to {
     opacity: 1;
@@ -344,24 +387,37 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  40% {
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+}
+
+@keyframes noap-toastify-fade-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
     opacity: 1;
-    transform: translateY(8px) scale(0.98);
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes noap-toastify-fade-out-bottom {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateY(32px) scale(0.95);
+    transform: translateY(20px) scale(0.95);
   }
 }
 
 @keyframes noap-toastify-slide {
   from {
     opacity: 0;
-    transform: translateX(60px) scale(0.98);
-  }
-  60% {
-    opacity: 1;
-    transform: translateX(-4px) scale(1.01);
+    transform: translateX(100%) scale(0.95);
   }
   to {
     opacity: 1;
@@ -374,24 +430,16 @@
     opacity: 1;
     transform: translateX(0) scale(1);
   }
-  40% {
-    opacity: 1;
-    transform: translateX(8px) scale(0.98);
-  }
   to {
     opacity: 0;
-    transform: translateX(60px) scale(0.95);
+    transform: translateX(100%) scale(0.95);
   }
 }
 
 @keyframes noap-toastify-zoom-in {
   from {
     opacity: 0;
-    transform: scale(0.7);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.05);
+    transform: scale(0.8);
   }
   to {
     opacity: 1;
@@ -404,27 +452,48 @@
     opacity: 1;
     transform: scale(1);
   }
-  40% {
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes noap-toastify-zoom-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  to {
     opacity: 1;
-    transform: scale(0.95);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes noap-toastify-zoom-out-bottom {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: scale(0.7);
+    transform: translateY(20px) scale(0.8);
   }
 }
 
 @keyframes noap-toastify-bounce-in {
   0% {
     opacity: 0;
-    transform: translateY(-100%) scale(0.3);
+    transform: translateY(-120%) scale(0.7);
   }
-  60% {
+  50% {
     opacity: 1;
-    transform: translateY(10%) scale(1.05);
+    transform: translateY(8%) scale(1.05);
   }
-  80% {
-    transform: translateY(-5%) scale(0.95);
+  70% {
+    transform: translateY(-4%) scale(0.98);
+  }
+  85% {
+    transform: translateY(2%) scale(1.01);
   }
   100% {
     opacity: 1;
@@ -433,12 +502,49 @@
 }
 
 @keyframes noap-toastify-bounce-out {
-  20% {
-    transform: translateY(-10%) scale(0.95);
+  10% {
+    transform: translateY(-4%) scale(0.98);
+  }
+  30% {
+    transform: translateY(6%) scale(1.03);
   }
   100% {
     opacity: 0;
-    transform: translateY(100%) scale(0.3);
+    transform: translateY(120%) scale(0.7);
+  }
+}
+
+@keyframes noap-toastify-bounce-in-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(120%) scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-8%) scale(1.05);
+  }
+  70% {
+    transform: translateY(4%) scale(0.98);
+  }
+  85% {
+    transform: translateY(-2%) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes noap-toastify-bounce-out-bottom {
+  10% {
+    transform: translateY(4%) scale(0.98);
+  }
+  30% {
+    transform: translateY(-6%) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120%) scale(0.7);
   }
 }
 

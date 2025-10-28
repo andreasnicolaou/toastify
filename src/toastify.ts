@@ -33,9 +33,9 @@ export class Toastify {
       toastifyElement.classList.add('noap-toastify-tap-hover');
       toastifyElement.addEventListener('click', () => {
         toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-        setTimeout(() => {
+        globalThis.setTimeout(() => {
           if (htmlContainer.contains(toastifyElement)) {
-            htmlContainer.removeChild(toastifyElement);
+            toastifyElement.remove();
             onComplete();
           }
         }, 500);
@@ -78,30 +78,39 @@ export class Toastify {
       progressBar.style.width = `${direction === 'increase' ? 0 : 100}%`;
       toastifyElement.appendChild(progressBar);
 
-      progressInterval = window.setInterval(
-        () => {
-          if (direction === 'increase') {
-            progress += 1;
-          } else {
-            progress -= 1;
-          }
-          progressBar!.style.width = `${progress}%`;
-          if ((direction === 'increase' && progress >= 100) || (direction === 'decrease' && progress <= 0)) {
-            clearInterval(progressInterval!);
-            toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-            setTimeout(() => {
-              if (htmlContainer.contains(toastifyElement)) {
-                htmlContainer.removeChild(toastifyElement);
-                onComplete();
-              }
-            }, 500);
-          }
-        },
-        progressBarDuration === 0 ? 100 : progressBarDuration
+      progressInterval = Number(
+        globalThis.setInterval(
+          () => {
+            if (direction === 'increase') {
+              progress += 1;
+            } else {
+              progress -= 1;
+            }
+            progressBar!.style.width = `${progress}%`;
+            if ((direction === 'increase' && progress >= 100) || (direction === 'decrease' && progress <= 0)) {
+              clearInterval(progressInterval!);
+              toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
+              // Use transitionend for smoother removal
+              const handleTransitionEnd = (): void => {
+                if (htmlContainer.contains(toastifyElement)) {
+                  toastifyElement.remove();
+                  onComplete();
+                }
+                toastifyElement.removeEventListener('transitionend', handleTransitionEnd);
+                toastifyElement.removeEventListener('animationend', handleTransitionEnd);
+              };
+              toastifyElement.addEventListener('transitionend', handleTransitionEnd);
+              toastifyElement.addEventListener('animationend', handleTransitionEnd);
+              // Fallback timeout
+              globalThis.setTimeout(handleTransitionEnd, 600);
+            }
+          },
+          progressBarDuration === 0 ? 100 : progressBarDuration
+        )
       );
 
       toastifyElement.addEventListener('mouseenter', () => {
-        if (progressInterval) {
+        if (progressInterval !== null) {
           toastifyElement.classList.add('noap-toastify-hovering');
           clearInterval(progressInterval);
           progressInterval = null;
@@ -110,8 +119,8 @@ export class Toastify {
 
       toastifyElement.addEventListener('mouseleave', () => {
         toastifyElement.classList.remove('noap-toastify-hovering');
-        if (!progressInterval) {
-          progressInterval = window.setInterval(
+        progressInterval ??= Number(
+          globalThis.setInterval(
             () => {
               /* istanbul ignore next */
               if (direction === 'increase') {
@@ -123,35 +132,37 @@ export class Toastify {
               if ((direction === 'increase' && progress >= 100) || (direction === 'decrease' && progress <= 0)) {
                 clearInterval(progressInterval!);
                 toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-                setTimeout(() => {
+                globalThis.setTimeout(() => {
                   if (htmlContainer.contains(toastifyElement)) {
-                    htmlContainer.removeChild(toastifyElement);
+                    toastifyElement.remove();
                     onComplete();
                   }
                 }, 500);
               }
             },
             progressBarDuration === 0 ? 100 : progressBarDuration
-          );
-        }
+          )
+        );
       });
     }
 
     if (!options.withProgressBar && options.duration! > 0) {
       const startAutoClose = (): void => {
-        autoCloseTimeout = window.setTimeout(() => {
-          toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-          setTimeout(() => {
-            if (htmlContainer.contains(toastifyElement)) {
-              htmlContainer.removeChild(toastifyElement);
-              onComplete();
-            }
-          }, 500);
-        }, options.duration);
+        autoCloseTimeout = Number(
+          globalThis.setTimeout(() => {
+            toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
+            globalThis.setTimeout(() => {
+              if (htmlContainer.contains(toastifyElement)) {
+                toastifyElement.remove();
+                onComplete();
+              }
+            }, 500);
+          }, options.duration)
+        );
       };
 
       const clearAutoClose = (): void => {
-        if (autoCloseTimeout) {
+        if (autoCloseTimeout !== null) {
           clearTimeout(autoCloseTimeout);
           autoCloseTimeout = null;
         }
@@ -178,9 +189,9 @@ export class Toastify {
       closeBtn.innerHTML = ToastifyIcons.getCloseIcon();
       closeBtn.onclick = (): void => {
         toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-        setTimeout(() => {
+        globalThis.setTimeout(() => {
           if (htmlContainer.contains(toastifyElement)) {
-            htmlContainer.removeChild(toastifyElement);
+            toastifyElement.remove();
             onComplete();
           }
         }, 200);
@@ -199,9 +210,9 @@ export class Toastify {
         const oldestToast = element as HTMLElement;
         if (!oldestToast.classList.contains('noap-toastify-hovering')) {
           oldestToast.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-          setTimeout(() => {
+          globalThis.setTimeout(() => {
             if (htmlContainer.contains(oldestToast)) {
-              htmlContainer.removeChild(oldestToast);
+              oldestToast.remove();
             }
           }, 500);
           break;
