@@ -3,6 +3,15 @@ import { ToastifyPosition } from './index';
 import { Toastify } from './toastify';
 import { ToastifyContainer } from './toastify-container';
 
+// Helper function to simulate toast removal
+const simulateToastRemoval = (container: ToastifyContainer): void => {
+  const toastElement = container.element.querySelector('.noap-toastify-toast') as HTMLElement;
+  if (toastElement) {
+    const transitionEvent = new Event('transitionend');
+    toastElement.dispatchEvent(transitionEvent);
+  }
+};
+
 describe('Toastify', () => {
   let htmlContainer!: ToastifyContainer;
   const onComplete = jest.fn();
@@ -153,7 +162,7 @@ describe('Toastify', () => {
       onComplete
     );
     jest.advanceTimersByTime(150); // progressBarDuration * 100 + buffer
-    jest.advanceTimersByTime(500); // for fade out
+    simulateToastRemoval(htmlContainer);
     expect(onComplete).toHaveBeenCalled();
   });
 
@@ -358,8 +367,7 @@ describe('Toastify', () => {
     for (let i = 0; i <= 100; i++) {
       jest.advanceTimersByTime(10);
     }
-    // Advance timers for the async removal (setTimeout 500ms)
-    jest.advanceTimersByTime(500);
+    simulateToastRemoval(htmlContainer);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 

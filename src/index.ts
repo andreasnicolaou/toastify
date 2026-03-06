@@ -1,7 +1,16 @@
 import './styles.css';
 import { ToastifyContainer } from './toastify-container';
 import { ToastifyQueue } from './toastify-queue';
-export type ToastifyAnimationType = 'fade' | 'slide' | 'zoom' | 'bounce' | 'flip' | 'none';
+export type ToastifyAnimationType =
+  | 'fade'
+  | 'slide'
+  | 'zoom'
+  | 'bounce'
+  | 'flip'
+  | 'roll'
+  | 'lightspeed'
+  | 'jackinthebox'
+  | 'none';
 export interface ToastifyOptions {
   duration?: number;
   isHtml?: boolean;
@@ -63,7 +72,7 @@ export class ToastifyManager {
   ) {
     /* istanbul ignore next */
     if (typeof document === 'undefined') {
-      throw new Error('document is not available. Toastify can only be used in a browser environment.');
+      throw new TypeError('document is not available. Toastify can only be used in a browser environment.');
     }
     this.options = {
       duration: 3000,
