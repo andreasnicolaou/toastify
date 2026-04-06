@@ -113,7 +113,7 @@
     "prettier": "3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "rollup": "^4.59.0",
-    "rollup-plugin-dts": "^6.3.0",
+    "rollup-plugin-dts": "^6.4.1",
     "rollup-plugin-postcss": "^4.0.2",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
