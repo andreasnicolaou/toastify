@@ -8,10 +8,6 @@ export class ToastifyQueue {
   private readonly maxToasts: number;
   private readonly newestOnTop: boolean | undefined;
   private readonly queue: Array<{
-    title: string;
-    message: string;
-    type: ToastifyType;
-    options: ToastifyOptions;
     create: (onComplete: () => void) => void;
   }> = [];
 
@@ -46,10 +42,6 @@ export class ToastifyQueue {
     } else {
       // Otherwise, add the toast to the queue
       this.queue.push({
-        title,
-        message,
-        type,
-        options,
         create: (onComplete) => {
           Toastify.create(
             this.container,

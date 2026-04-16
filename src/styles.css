@@ -1026,8 +1026,42 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
+  .noap-toastify-top-left,
+  .noap-toastify-top-right,
+  .noap-toastify-bottom-left,
+  .noap-toastify-bottom-right,
+  .noap-toastify-top-center,
+  .noap-toastify-top-center-full,
+  .noap-toastify-bottom-center,
+  .noap-toastify-bottom-center-full,
+  .noap-toastify-center {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    padding: 0;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .noap-toastify-bottom-left,
+  .noap-toastify-bottom-right,
+  .noap-toastify-bottom-center,
+  .noap-toastify-bottom-center-full {
+    justify-content: flex-end;
+  }
+
+  .noap-toastify-center {
+    justify-content: center;
+  }
+
   .noap-toastify-toast {
-    width: 90%;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-sizing: border-box;
   }
 }
