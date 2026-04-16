@@ -27,16 +27,34 @@ export class Toastify {
     const animationType = options.animationType || 'fade';
     const from = Toastify.getAnimationSuffix(animationType, positionContainer);
 
+    let progressBar: HTMLElement | null = null;
+    let progressInterval: number | null = null;
+    let autoCloseTimeout: number | null = null;
+    let completed = false;
+    const guardedComplete = (): void => {
+      if (completed) return;
+      completed = true;
+      onComplete();
+    };
+
     toastifyElement.className = `noap-toastify-toast noap-toastify-${options.direction} noap-toastify-anim-${animationType}${from}`;
     toastifyElement.classList.add(`noap-toastify-${type}`);
     if (options.tapToDismiss) {
       toastifyElement.classList.add('noap-toastify-tap-hover');
       toastifyElement.addEventListener('click', () => {
+        if (progressInterval !== null) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+        if (autoCloseTimeout !== null) {
+          clearTimeout(autoCloseTimeout);
+          autoCloseTimeout = null;
+        }
         toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
         globalThis.setTimeout(() => {
           if (htmlContainer.contains(toastifyElement)) {
             toastifyElement.remove();
-            onComplete();
+            guardedComplete();
           }
         }, 500);
       });
@@ -65,9 +83,6 @@ export class Toastify {
       toastifyElement.appendChild(iconElement);
     }
 
-    let progressBar: HTMLElement | null = null;
-    let progressInterval: number | null = null;
-    let autoCloseTimeout: number | null = null;
     const progressBarDuration = options.progressBarDuration ? options.progressBarDuration : 100;
     const direction = options.progressBarDirection || 'decrease';
     let progress = direction === 'increase' ? 0 : 100;
@@ -91,10 +106,15 @@ export class Toastify {
               clearInterval(progressInterval!);
               toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
               // Use transitionend for smoother removal
+              let fallbackTimeout: number | null = null;
               const handleTransitionEnd = (): void => {
+                if (fallbackTimeout !== null) {
+                  clearTimeout(fallbackTimeout);
+                  fallbackTimeout = null;
+                }
                 if (htmlContainer.contains(toastifyElement)) {
                   toastifyElement.remove();
-                  onComplete();
+                  guardedComplete();
                 }
                 toastifyElement.removeEventListener('transitionend', handleTransitionEnd);
                 toastifyElement.removeEventListener('animationend', handleTransitionEnd);
@@ -102,7 +122,7 @@ export class Toastify {
               toastifyElement.addEventListener('transitionend', handleTransitionEnd);
               toastifyElement.addEventListener('animationend', handleTransitionEnd);
               // Fallback timeout
-              globalThis.setTimeout(handleTransitionEnd, 600);
+              fallbackTimeout = Number(globalThis.setTimeout(handleTransitionEnd, 600));
             }
           },
           progressBarDuration === 0 ? 100 : progressBarDuration
@@ -135,7 +155,7 @@ export class Toastify {
                 globalThis.setTimeout(() => {
                   if (htmlContainer.contains(toastifyElement)) {
                     toastifyElement.remove();
-                    onComplete();
+                    guardedComplete();
                   }
                 }, 500);
               }
@@ -146,7 +166,7 @@ export class Toastify {
       });
     }
 
-    if (!options.withProgressBar && options.duration! > 0) {
+    if (!options.withProgressBar && (options.duration ?? 0) > 0) {
       const startAutoClose = (): void => {
         autoCloseTimeout = Number(
           globalThis.setTimeout(() => {
@@ -154,7 +174,7 @@ export class Toastify {
             globalThis.setTimeout(() => {
               if (htmlContainer.contains(toastifyElement)) {
                 toastifyElement.remove();
-                onComplete();
+                guardedComplete();
               }
             }, 500);
           }, options.duration)
@@ -187,17 +207,36 @@ export class Toastify {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'noap-toastify-close';
       closeBtn.innerHTML = ToastifyIcons.getCloseIcon();
-      closeBtn.onclick = (): void => {
+      closeBtn.addEventListener('click', () => {
+        if (progressInterval !== null) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+        if (autoCloseTimeout !== null) {
+          clearTimeout(autoCloseTimeout);
+          autoCloseTimeout = null;
+        }
         toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
         globalThis.setTimeout(() => {
           if (htmlContainer.contains(toastifyElement)) {
             toastifyElement.remove();
-            onComplete();
+            guardedComplete();
           }
         }, 200);
-      };
+      });
       toastifyElement.appendChild(closeBtn);
     }
+    toastifyElement.addEventListener('toastify:evict', () => {
+      if (progressInterval !== null) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      if (autoCloseTimeout !== null) {
+        clearTimeout(autoCloseTimeout);
+        autoCloseTimeout = null;
+      }
+      guardedComplete();
+    });
     if (newestOnTop) {
       /* istanbul ignore next */
       htmlContainer.insertBefore(toastifyElement, htmlContainer.firstChild);
@@ -209,6 +248,7 @@ export class Toastify {
       for (const element of Array.from(htmlContainer.children)) {
         const oldestToast = element as HTMLElement;
         if (!oldestToast.classList.contains('noap-toastify-hovering')) {
+          oldestToast.dispatchEvent(new CustomEvent('toastify:evict'));
           oldestToast.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
           globalThis.setTimeout(() => {
             if (htmlContainer.contains(oldestToast)) {

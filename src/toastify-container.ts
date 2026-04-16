@@ -8,7 +8,6 @@ export class ToastifyContainer {
     this.container = document.createElement('div');
     const addedClass = customClasses ? `${customClasses} ` : '';
     this.container.className = `${addedClass}noap-toastify-container noap-toastify-${position}`;
-    // apply the position as an attribute
     this.position = position;
     document.body.appendChild(this.container);
   }

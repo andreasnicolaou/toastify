@@ -6,7 +6,7 @@ export class ToastifyIcons {
   }
 
   public static getToastIcon(type: ToastifyType): string {
-    const icons: Record<string, string> = {
+    const icons: Record<ToastifyType, string> = {
       success: `<svg aria-hidden="true" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#22c55e"/><path d="M10 17l4 4 8-8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
       error: `<svg aria-hidden="true" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#ef4444"/><path d="M20 12L12 20M12 12l8 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
       info: `<svg aria-hidden="true" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#3b82f6"/><path d="M16 10v2m0 4v6" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="8" r="1.5" fill="#fff"/></svg>`,
