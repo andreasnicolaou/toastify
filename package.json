@@ -109,7 +109,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
-    "jest-junit": "^16.0.0",
+    "jest-junit": "^17.0.0",
     "prettier": "3.8.3",
     "prettier-plugin-organize-imports": "^4.3.0",
     "rollup": "^4.59.0",
