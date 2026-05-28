@@ -1,5 +1,6 @@
 import { Toastify } from './toastify';
 import { ToastifyContainer } from './toastify-container';
+import { ToastifyHandle } from './toastify-handle';
 import { ToastifyQueue } from './toastify-queue';
 
 describe('ToastifyQueue', () => {
@@ -91,7 +92,47 @@ describe('ToastifyQueue', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (toastifyQueue as any).queue = [{ create: mockCreate }];
     toastifyQueue['processQueue']();
+    expect(toastifyQueue['processQueue']()).toBeUndefined();
     expect(mockCreate).toHaveBeenCalled();
     expect(toastifyQueue['activeToasts']).toBe(0); // Callback decrements it
+  });
+
+  test('enqueue returns a ToastifyHandle', () => {
+    const handle = toastifyQueue.enqueue('Title', 'Message', 'success');
+    expect(handle).toBeInstanceOf(ToastifyHandle);
+  });
+
+  test('enqueue returns unique handles for consecutive calls', () => {
+    const handle1 = toastifyQueue.enqueue('Title A', 'Message A', 'success');
+    const handle2 = toastifyQueue.enqueue('Title B', 'Message B', 'info');
+    expect(handle1).not.toBe(handle2);
+  });
+
+  test('enqueue passes handle as 7th argument to Toastify.create', () => {
+    const handle = toastifyQueue.enqueue('Title', 'Message', 'success');
+    expect(mockToastifyCreate).toHaveBeenCalledTimes(1);
+    expect(mockToastifyCreate.mock.calls[0][6]).toBe(handle);
+  });
+
+  test('queued handle buffers updates and replays on attach', () => {
+    // Fill up the queue so the next toast is deferred
+    toastifyQueue.enqueue('A', 'a', 'success');
+    toastifyQueue.enqueue('B', 'b', 'success');
+    toastifyQueue.enqueue('C', 'c', 'success');
+    // This one is queued (maxToasts = 3, all slots taken)
+    const handle = toastifyQueue.enqueue('D', 'd', 'info');
+    expect(mockToastifyCreate).toHaveBeenCalledTimes(3);
+
+    // Update while the toast is still queued
+    handle.update({ message: 'Queued update' });
+
+    // Simulate one slot freeing up — triggers processQueue which calls Toastify.create for D
+    const onCompleteA = mockToastifyCreate.mock.calls[0][5];
+    onCompleteA();
+    expect(mockToastifyCreate).toHaveBeenCalledTimes(4);
+
+    // The handle passed to the deferred Toastify.create should be the same handle
+    const deferredHandle = mockToastifyCreate.mock.calls[3][6];
+    expect(deferredHandle).toBe(handle);
   });
 });

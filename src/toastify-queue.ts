@@ -1,6 +1,7 @@
-import { ToastifyOptions, ToastifyType } from './index';
+import type { ToastifyOptions, ToastifyType } from './index';
 import { Toastify } from './toastify';
 import { ToastifyContainer } from './toastify-container';
+import { ToastifyHandle } from './toastify-handle';
 
 export class ToastifyQueue {
   private activeToasts: number = 0;
@@ -31,13 +32,22 @@ export class ToastifyQueue {
     message: string,
     type: ToastifyType,
     options: ToastifyOptions = Object.create(Object.prototype)
-  ): void {
+  ): ToastifyHandle {
+    const handle = new ToastifyHandle();
     // If there is space, display the toast immediately
     if (this.activeToasts < this.maxToasts) {
-      Toastify.create(this.container, this.maxToasts, this.newestOnTop, { title, message, type }, options, () => {
-        this.activeToasts--; // Decrement active toasts when the toast is removed
-        this.processQueue(); // Check the queue for the next toast
-      });
+      Toastify.create(
+        this.container,
+        this.maxToasts,
+        this.newestOnTop,
+        { title, message, type },
+        options,
+        () => {
+          this.activeToasts--; // Decrement active toasts when the toast is removed
+          this.processQueue(); // Check the queue for the next toast
+        },
+        handle
+      );
       this.activeToasts++; // Increment active toasts
     } else {
       // Otherwise, add the toast to the queue
@@ -49,11 +59,13 @@ export class ToastifyQueue {
             this.newestOnTop,
             { title, message, type },
             options,
-            onComplete
+            onComplete,
+            handle
           );
         },
       });
     }
+    return handle;
   }
 
   /**
