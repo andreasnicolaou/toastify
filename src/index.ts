@@ -1,6 +1,8 @@
 import './styles.css';
 import { ToastifyContainer } from './toastify-container';
+import { ToastifyHandle } from './toastify-handle';
 import { ToastifyQueue } from './toastify-queue';
+export { ToastifyHandle } from './toastify-handle';
 export type ToastifyAnimationType =
   | 'fade'
   | 'slide'
@@ -36,6 +38,12 @@ export type ToastifyPosition =
   | 'center';
 
 export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default' | 'light';
+
+export type ToastifyUpdateOptions = Partial<ToastifyOptions> & {
+  title?: string;
+  message?: string;
+  type?: ToastifyType;
+};
 /**
  * Initializes a new ToastifyManager instance to manage toast notifications.
  * @param position - The position where the toast container should be displayed (e.g., top-right, bottom-left).
@@ -101,8 +109,12 @@ export class ToastifyManager {
    * @memberof ToastifyManager
    * @author Andreas Nicolaou
    */
-  public default(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
-    this.toastifyQueue.enqueue(title, message, 'default', { ...this.options, ...options });
+  public default(
+    title: string,
+    message: string,
+    options: ToastifyOptions = Object.create(Object.prototype)
+  ): ToastifyHandle {
+    return this.toastifyQueue.enqueue(title, message, 'default', { ...this.options, ...options });
   }
 
   /**
@@ -114,8 +126,12 @@ export class ToastifyManager {
    * @memberof ToastifyManager
    * @author Andreas Nicolaou
    */
-  public error(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
-    this.toastifyQueue.enqueue(title, message, 'error', { ...this.options, ...options });
+  public error(
+    title: string,
+    message: string,
+    options: ToastifyOptions = Object.create(Object.prototype)
+  ): ToastifyHandle {
+    return this.toastifyQueue.enqueue(title, message, 'error', { ...this.options, ...options });
   }
 
   /**
@@ -127,8 +143,12 @@ export class ToastifyManager {
    * @memberof ToastifyManager
    * @author Andreas Nicolaou
    */
-  public info(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
-    this.toastifyQueue.enqueue(title, message, 'info', { ...this.options, ...options });
+  public info(
+    title: string,
+    message: string,
+    options: ToastifyOptions = Object.create(Object.prototype)
+  ): ToastifyHandle {
+    return this.toastifyQueue.enqueue(title, message, 'info', { ...this.options, ...options });
   }
 
   /**
@@ -140,8 +160,12 @@ export class ToastifyManager {
    * @memberof ToastifyManager
    * @author Andreas Nicolaou
    */
-  public light(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
-    this.toastifyQueue.enqueue(title, message, 'light', { ...this.options, ...options });
+  public light(
+    title: string,
+    message: string,
+    options: ToastifyOptions = Object.create(Object.prototype)
+  ): ToastifyHandle {
+    return this.toastifyQueue.enqueue(title, message, 'light', { ...this.options, ...options });
   }
 
   /**
@@ -153,8 +177,12 @@ export class ToastifyManager {
    * @memberof ToastifyManager
    * @author Andreas Nicolaou
    */
-  public success(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
-    this.toastifyQueue.enqueue(title, message, 'success', { ...this.options, ...options });
+  public success(
+    title: string,
+    message: string,
+    options: ToastifyOptions = Object.create(Object.prototype)
+  ): ToastifyHandle {
+    return this.toastifyQueue.enqueue(title, message, 'success', { ...this.options, ...options });
   }
 
   /**
@@ -165,7 +193,11 @@ export class ToastifyManager {
    *                  set on ToastifyManager, and can be overriden individually.
    * @memberof ToastifyManager
    */
-  public warning(title: string, message: string, options: ToastifyOptions = Object.create(Object.prototype)): void {
-    this.toastifyQueue.enqueue(title, message, 'warning', { ...this.options, ...options });
+  public warning(
+    title: string,
+    message: string,
+    options: ToastifyOptions = Object.create(Object.prototype)
+  ): ToastifyHandle {
+    return this.toastifyQueue.enqueue(title, message, 'warning', { ...this.options, ...options });
   }
 }

@@ -282,6 +282,34 @@
           </div>
         </div>
       </div>
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="text-body-emphasis border-bottom border-secondary border-2 pb-1 mb-3">
+            Updating Active Toasts
+            <span class="badge rounded-pill text-bg-success" style="font-size: 0.65em; vertical-align: middle"
+              >New</span
+            >
+          </h2>
+          <p class="text-body-secondary mb-3">
+            Toast methods return a <strong>handle</strong> that lets you update the same toast in-place — perfect for
+            multi-step async workflows like API calls or file uploads.
+          </p>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <button class="btn btn-outline-info w-100" id="demoConnectBtn" type="button">🔌 Fetch Repo Info</button>
+              <div class="form-text text-secondary mt-1">Fetching → Parsing → Loaded with progress bar</div>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-outline-warning w-100" id="demoUploadBtn" type="button">📤 Submit POST</button>
+              <div class="form-text text-secondary mt-1">Submitting → Processing → Post created</div>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-outline-danger w-100" id="demoFailBtn" type="button">❌ Force Failure</button>
+              <div class="form-text text-secondary mt-1">Fetching → Validating → Fails with error</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div
         id="loading-overlay"
         class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
@@ -528,6 +556,79 @@
             });
           }
         }
+        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        getElement('demoConnectBtn')?.addEventListener('click', async () => {
+          initToastr();
+          if (!toastrInstance) return;
+          const handle = toastrInstance.info('GitHub', 'Fetching repository info...', { duration: 0 });
+          try {
+            const resp = await fetch('https://api.github.com/repos/andreasnicolaou/toastify');
+            await delay(800);
+            handle.update({ message: 'Parsing response...' });
+            const data = await resp.json();
+            await delay(800);
+            handle.update({
+              title: 'Repository Loaded',
+              message: `⭐ ${data.stargazers_count} stars · 🍴 ${data.forks_count} forks`,
+              type: 'success',
+              withProgressBar: true,
+              progressBarDuration: 50,
+            });
+          } catch {
+            handle.update({ title: 'Error', message: 'Could not load repository data', type: 'error', duration: 5000 });
+          }
+        });
+
+        getElement('demoUploadBtn')?.addEventListener('click', async () => {
+          initToastr();
+          if (!toastrInstance) return;
+          const handle = toastrInstance.warning('API', 'Submitting post...', { duration: 0 });
+          try {
+            const resp = await fetch('https://jsonplaceholder.typicode.com/posts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title: 'Toastify Demo', body: 'Testing the update API', userId: 1 }),
+            });
+            await delay(800);
+            handle.update({ message: 'Processing server response...' });
+            const data = await resp.json();
+            await delay(800);
+            handle.update({
+              title: 'Post Created',
+              message: `New post ID: ${data.id} — "${data.title}"`,
+              type: 'success',
+              withProgressBar: true,
+              progressBarDuration: 50,
+            });
+          } catch {
+            handle.update({ title: 'Error', message: 'POST request failed', type: 'error', duration: 5000 });
+          }
+        });
+
+        getElement('demoFailBtn')?.addEventListener('click', async () => {
+          initToastr();
+          if (!toastrInstance) return;
+          const handle = toastrInstance.info('Request', 'Fetching resource...', { duration: 0 });
+          try {
+            const resp = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+            await delay(800);
+            handle.update({ message: 'Validating data...' });
+            const data = await resp.json();
+            await delay(800);
+            if (data.userId !== 999) {
+              throw new Error(`Unexpected userId: ${data.userId}`);
+            }
+            handle.update({ title: 'Done', message: 'Validated!', type: 'success', duration: 3000 });
+          } catch (err) {
+            handle.update({
+              title: 'Validation Failed',
+              message: err instanceof Error ? err.message : 'Unknown error',
+              type: 'error',
+              duration: 5000,
+            });
+          }
+        });
       }
       function setThemeIcon(theme) {
         const themeIcon = document.querySelector('.theme-icon');

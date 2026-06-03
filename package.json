@@ -1,6 +1,6 @@
 {
   "name": "@andreasnicolaou/toastify",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Lightweight and customizable toast notifications for web applications.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -33,17 +33,17 @@
     "files": [
       {
         "path": "dist/index.js",
-        "maxSize": "4kB",
+        "maxSize": "5kB",
         "compression": "gzip"
       },
       {
         "path": "dist/index.cjs",
-        "maxSize": "4kB",
+        "maxSize": "5kB",
         "compression": "gzip"
       },
       {
         "path": "dist/index.umd.js",
-        "maxSize": "5kB",
+        "maxSize": "6kB",
         "compression": "gzip"
       },
       {

@@ -1,5 +1,6 @@
 import { ToastifyManager } from '.';
 import { ToastifyContainer } from './toastify-container';
+import { ToastifyHandle } from './toastify-handle';
 import { ToastifyQueue } from './toastify-queue';
 
 jest.mock('./toastify-container');
@@ -166,5 +167,16 @@ describe('ToastifyManager', () => {
       animationType: 'fade',
       tapToDismiss: false,
     });
+  });
+
+  test('toast methods return a ToastifyHandle from enqueue', () => {
+    const handle = new ToastifyHandle();
+    (mockToastifyQueue.enqueue as jest.Mock).mockReturnValue(handle);
+    expect(toastifyManager.default('t', 'm')).toBe(handle);
+    expect(toastifyManager.error('t', 'm')).toBe(handle);
+    expect(toastifyManager.info('t', 'm')).toBe(handle);
+    expect(toastifyManager.light('t', 'm')).toBe(handle);
+    expect(toastifyManager.success('t', 'm')).toBe(handle);
+    expect(toastifyManager.warning('t', 'm')).toBe(handle);
   });
 });

@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { ToastifyPosition } from './index';
 import { Toastify } from './toastify';
 import { ToastifyContainer } from './toastify-container';
+import { ToastifyHandle } from './toastify-handle';
 
 // Helper function to simulate toast removal
 const simulateToastRemoval = (container: ToastifyContainer): void => {
@@ -650,5 +651,302 @@ describe('Toastify', () => {
       );
       while (htmlContainer.element.firstChild) htmlContainer.element.removeChild(htmlContainer.element.firstChild);
     }).not.toThrow();
+  });
+
+  test('update on unattached handle (buffered) does not throw', () => {
+    const handle = new ToastifyHandle();
+    expect(() => handle.update({ title: 'Buffered' })).not.toThrow();
+  });
+
+  test('handle.update changes title in DOM', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Original Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0, showIcons: true },
+      onComplete,
+      handle
+    );
+    handle.update({ title: 'Updated Title' });
+    const titleEl = htmlContainer.element.querySelector('.noap-toastify-title') as HTMLElement;
+    expect(titleEl.innerText).toBe('Updated Title');
+  });
+
+  test('handle.update changes message in DOM', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Original Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0 },
+      onComplete,
+      handle
+    );
+    handle.update({ message: 'Updated Message' });
+    const msgEl = htmlContainer.element.querySelector('.noap-toastify-message') as HTMLElement;
+    expect(msgEl.innerText).toBe('Updated Message');
+  });
+
+  test('handle.update changes message as HTML when isHtml is true', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Plain', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0, isHtml: false },
+      onComplete,
+      handle
+    );
+    handle.update({ message: '<b>Bold</b>', isHtml: true });
+    const msgEl = htmlContainer.element.querySelector('.noap-toastify-message') as HTMLElement;
+    expect(msgEl.innerHTML).toBe('<b>Bold</b>');
+  });
+
+  test('handle.update changes toast type class and icon', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0, showIcons: true },
+      onComplete,
+      handle
+    );
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+    expect(toastEl.classList.contains('noap-toastify-info')).toBe(true);
+    handle.update({ type: 'success' });
+    expect(toastEl.classList.contains('noap-toastify-info')).toBe(false);
+    expect(toastEl.classList.contains('noap-toastify-success')).toBe(true);
+    const iconEl = toastEl.querySelector('.noap-toastify-icon');
+    expect(iconEl?.className).toContain('success');
+  });
+
+  test('handle.update with same type does not change class', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'error' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0 },
+      onComplete,
+      handle
+    );
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+    handle.update({ type: 'error' });
+    expect(toastEl.classList.contains('noap-toastify-error')).toBe(true);
+  });
+
+  test('handle.update with duration starts auto-close and toast is dismissed', () => {
+    const onCompleteUpdate = jest.fn();
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0 },
+      onCompleteUpdate,
+      handle
+    );
+    jest.advanceTimersByTime(5000);
+    expect(onCompleteUpdate).not.toHaveBeenCalled();
+
+    handle.update({ duration: 1000 });
+    jest.advanceTimersByTime(1000);
+    jest.advanceTimersByTime(500);
+    expect(onCompleteUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  test('handle.update with withProgressBar adds progress bar and auto-dismisses', () => {
+    const onCompleteUpdate = jest.fn();
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0 },
+      onCompleteUpdate,
+      handle
+    );
+    expect(htmlContainer.element.querySelector('.noap-toastify-progress-bar')).toBeNull();
+
+    handle.update({ withProgressBar: true, progressBarDuration: 1 });
+    expect(htmlContainer.element.querySelector('.noap-toastify-progress-bar')).toBeInTheDocument();
+
+    jest.advanceTimersByTime(200);
+    simulateToastRemoval(htmlContainer);
+    expect(onCompleteUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  test('handle.update removes progress bar when switching to duration-based dismiss', () => {
+    const onCompleteUpdate = jest.fn();
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: true, progressBarDuration: 100, duration: 0 },
+      onCompleteUpdate,
+      handle
+    );
+    expect(htmlContainer.element.querySelector('.noap-toastify-progress-bar')).toBeInTheDocument();
+
+    handle.update({ withProgressBar: false, duration: 500 });
+    expect(htmlContainer.element.querySelector('.noap-toastify-progress-bar')).toBeNull();
+
+    jest.advanceTimersByTime(500);
+    jest.advanceTimersByTime(500);
+    expect(onCompleteUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  test('handle.update after toast is dismissed is a no-op', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Original', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 100, closeButton: true },
+      onComplete,
+      handle
+    );
+    const closeBtn = htmlContainer.element.querySelector('.noap-toastify-close') as HTMLElement;
+    closeBtn.click();
+    jest.advanceTimersByTime(300);
+
+    expect(() => handle.update({ title: 'Should Not Update' })).not.toThrow();
+  });
+
+  test('handle.update inserts title element when initially empty', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: '', message: 'Message only', type: 'default' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0 },
+      onComplete,
+      handle
+    );
+    let titleEl = htmlContainer.element.querySelector('.noap-toastify-title') as HTMLElement | null;
+    expect(titleEl?.innerText ?? '').toBe('');
+
+    handle.update({ title: 'Now Has Title' });
+    titleEl = htmlContainer.element.querySelector('.noap-toastify-title') as HTMLElement;
+    expect(titleEl.innerText).toBe('Now Has Title');
+  });
+
+  test('buffered updates on queued handle are replayed on attach', () => {
+    const handle = new ToastifyHandle();
+    // buffer update before attaching (simulates queued toast)
+    handle.update({ message: 'Buffered message', type: 'success' });
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Original', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0, showIcons: true },
+      onComplete,
+      handle
+    );
+    // After create(), buffered updates should have been applied
+    const msgEl = htmlContainer.element.querySelector('.noap-toastify-message') as HTMLElement;
+    expect(msgEl.innerText).toBe('Buffered message');
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+    expect(toastEl.classList.contains('noap-toastify-success')).toBe(true);
+  });
+
+  test('handle.update clears active autoCloseTimeout when re-configuring dismiss logic', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 5000 },
+      onComplete,
+      handle
+    );
+    // autoCloseTimeout is active (duration=5000); updating duration triggers setupDismissLogic
+    // which should clearTimeout the old timer (lines 56-57) and start a new one
+    handle.update({ duration: 1000 });
+    jest.advanceTimersByTime(1000); // new auto-close fires
+    jest.advanceTimersByTime(500); // removal timeout fires
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('tapToDismiss click clears active progressInterval', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Tap', message: 'With progress', type: 'default' },
+      {
+        direction: 'ltr',
+        animationType: 'fade',
+        tapToDismiss: true,
+        withProgressBar: true,
+        progressBarDuration: 100,
+        duration: 0,
+      },
+      onComplete
+    );
+    // progressInterval is active; clicking the toast should clearInterval (lines 207-208)
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+    toastEl.click();
+    jest.advanceTimersByTime(600);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('close button click clears active progressInterval', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Close', message: 'With progress', type: 'default' },
+      {
+        direction: 'ltr',
+        animationType: 'fade',
+        closeButton: true,
+        withProgressBar: true,
+        progressBarDuration: 100,
+        duration: 0,
+      },
+      onComplete
+    );
+    // progressInterval is active; clicking close should clearInterval (lines 259-260)
+    const closeBtn = htmlContainer.element.querySelector('.noap-toastify-close') as HTMLElement;
+    closeBtn.click();
+    jest.advanceTimersByTime(300);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  test('toastify:evict clears active progressInterval', () => {
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Evict', message: 'With progress', type: 'default' },
+      {
+        direction: 'ltr',
+        animationType: 'fade',
+        withProgressBar: true,
+        progressBarDuration: 100,
+        duration: 0,
+      },
+      onComplete
+    );
+    // progressInterval is active; dispatching evict should clearInterval (lines 279-280)
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+    toastEl.dispatchEvent(new CustomEvent('toastify:evict'));
+    expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });

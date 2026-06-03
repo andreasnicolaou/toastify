@@ -169,6 +169,67 @@ All options can be set globally on the manager or per-toast (per call).
 
 ---
 
+## Updating Active Toasts
+
+All toast methods (`success`, `error`, `info`, `warning`, `default`, `light`) return a **`ToastifyHandle`** that lets you update the toast in-place while it is still visible.
+
+```ts
+const handle = toast.info('Upload', 'Uploading...');
+
+// Later — update message and type in-place
+handle.update({ message: 'Processing on server...' });
+
+// Final step — switch type, update message, start auto-dismiss with a progress bar
+handle.update({
+  title: 'Upload',
+  message: 'Upload complete!',
+  type: 'success',
+  withProgressBar: true,
+  progressBarDuration: 100,
+});
+```
+
+Works seamlessly with real async code:
+
+```ts
+const handle = toast.info('GitHub', 'Fetching data...', { duration: 0 });
+try {
+  const resp = await fetch('https://api.github.com/repos/andreasnicolaou/toastify');
+  handle.update({ message: 'Parsing response...' });
+  const data = await resp.json();
+  handle.update({
+    title: 'Loaded',
+    message: `⭐ ${data.stargazers_count} stars`,
+    type: 'success',
+    withProgressBar: true,
+  });
+} catch {
+  handle.update({ title: 'Error', message: 'Request failed', type: 'error', duration: 5000 });
+}
+```
+
+**Queued toasts work too.** If the toast is waiting behind `maxToasts`, calls to `handle.update()` are buffered and replayed the moment the toast appears — no polling, no race conditions.
+
+### `ToastifyUpdateOptions`
+
+| Property              | Type           | Description                                  |
+| --------------------- | -------------- | -------------------------------------------- |
+| `title`               | `string`       | Replaces the toast title text                |
+| `message`             | `string`       | Replaces the toast message text              |
+| `type`                | `ToastifyType` | Swaps the visual type (colour + icon)        |
+| `duration`            | `number`       | Restarts auto-dismiss timer (0 = indefinite) |
+| `withProgressBar`     | `boolean`      | Adds or removes the progress bar             |
+| `progressBarDuration` | `number`       | Interval (ms) per progress-bar tick          |
+| `closeButton`         | `boolean`      | Shows or hides the close button              |
+| `isHtml`              | `boolean`      | Interprets message as raw HTML               |
+| `tapToDismiss`        | `boolean`      | Enables or disables tap-to-dismiss           |
+
+Any field from `ToastifyOptions` is accepted — only the keys you provide are changed, all others remain as-is.
+
+> **Tip:** Use `duration: 0` on the initial call to prevent auto-dismiss while the operation is in progress, then supply a `duration` (or `withProgressBar: true`) on the final `update()` call to auto-dismiss once done.
+
+---
+
 ## Contributing
 
 Contributions are welcome! If you encounter issues or have ideas to enhance the library, feel free to submit an issue or pull request.
