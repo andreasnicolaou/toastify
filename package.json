@@ -99,7 +99,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.5",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
-    "@typescript-eslint/parser": "^8.59.1",
+    "@typescript-eslint/parser": "^8.62.1",
     "bundlewatch": "^0.4.2",
     "cross-env": "^10.1.0",
     "eslint": "^10.6.0",
