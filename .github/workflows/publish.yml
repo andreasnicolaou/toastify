@@ -2,20 +2,23 @@ name: Publish to npm
 permissions:
   contents: read
   packages: write
+  id-token: write
 on:
   release:
     types: [published]
+  workflow_dispatch:
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          registry-url: 'https://registry.npmjs.org/'
+      - name: Upgrade npm (OIDC trusted publishing requires >= 11.5.1)
+        run: npm install -g npm@latest
       - name: Install dependencies
         run: npm install
       - name: Run lint
@@ -24,8 +27,8 @@ jobs:
         run: npm test
       - name: Build the project
         run: npm run build
-      - name: Run bundlewatch
-        run: npx bundlewatch
+      - name: Check bundle size
+        run: npm run test:bundle
       - name: Check if version already published
         id: version-check
         run: |
@@ -39,8 +42,16 @@ jobs:
             echo "Version $PACKAGE_VERSION of $PACKAGE_NAME is not published yet"
             echo "already-published=false" >> $GITHUB_OUTPUT
           fi
+      - name: Debug OIDC prerequisites
+        run: |
+          echo "npm version: $(npm -v)"
+          echo "npm path: $(which npm)"
+          echo "node version: $(node -v)"
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "OIDC token endpoint: AVAILABLE"
+          else
+            echo "OIDC token endpoint: MISSING"
+          fi
       - name: Publish to npm
         if: steps.version-check.outputs.already-published == 'false'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
