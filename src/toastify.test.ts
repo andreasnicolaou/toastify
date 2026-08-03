@@ -726,6 +726,51 @@ describe('Toastify', () => {
     expect(iconEl?.className).toContain('success');
   });
 
+  test('handle.update shows and hides the close button', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Upload', message: 'Uploading...', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0, closeButton: false },
+      onComplete,
+      handle
+    );
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+    expect(toastEl.querySelector('.noap-toastify-close')).toBeNull();
+
+    handle.update({ message: 'Processing on server...', closeButton: true });
+    expect(toastEl.querySelector('.noap-toastify-close')).toBeInTheDocument();
+
+    handle.update({ closeButton: false });
+    expect(toastEl.querySelector('.noap-toastify-close')).toBeNull();
+  });
+
+  test('handle.update applies visual interaction options', () => {
+    const handle = new ToastifyHandle();
+    Toastify.create(
+      htmlContainer,
+      5,
+      false,
+      { title: 'Title', message: 'Message', type: 'info' },
+      { direction: 'ltr', animationType: 'fade', withProgressBar: false, duration: 0, showIcons: false },
+      onComplete,
+      handle
+    );
+    const toastEl = htmlContainer.element.querySelector('.noap-toastify-toast') as HTMLElement;
+
+    handle.update({ showIcons: true, direction: 'rtl', tapToDismiss: true });
+    expect(toastEl.querySelector('.noap-toastify-icon')).toBeInTheDocument();
+    expect(toastEl.classList.contains('noap-toastify-ltr')).toBe(false);
+    expect(toastEl.classList.contains('noap-toastify-rtl')).toBe(true);
+    expect(toastEl.classList.contains('noap-toastify-tap-hover')).toBe(true);
+
+    handle.update({ showIcons: false, tapToDismiss: false });
+    expect(toastEl.querySelector('.noap-toastify-icon')).toBeNull();
+    expect(toastEl.classList.contains('noap-toastify-tap-hover')).toBe(false);
+  });
+
   test('handle.update with same type does not change class', () => {
     const handle = new ToastifyHandle();
     Toastify.create(

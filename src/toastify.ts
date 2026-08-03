@@ -34,6 +34,7 @@ export class Toastify {
     let autoCloseTimeout: number | null = null;
     let completed = false;
     let dismissAbortController = new AbortController();
+    let tapDismissAbortController = new AbortController();
     let currentType = type;
     let currentOptions: ToastifyOptions = { ...options };
 
@@ -41,6 +42,30 @@ export class Toastify {
       if (completed) return;
       completed = true;
       onComplete();
+    };
+
+    const getAnimationClass = (out = false): string => {
+      const animationType = currentOptions.animationType || 'fade';
+      const suffix = Toastify.getAnimationSuffix(animationType, positionContainer);
+      return `noap-toastify-anim-${animationType}${out ? '-out' : ''}${suffix}`;
+    };
+
+    const dismiss = (delay: number): void => {
+      if (progressInterval !== null) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      if (autoCloseTimeout !== null) {
+        clearTimeout(autoCloseTimeout);
+        autoCloseTimeout = null;
+      }
+      toastifyElement.classList.add(getAnimationClass(true));
+      globalThis.setTimeout(() => {
+        if (htmlContainer.contains(toastifyElement)) {
+          toastifyElement.remove();
+          guardedComplete();
+        }
+      }, delay);
     };
 
     const setupDismissLogic = (opts: ToastifyOptions): void => {
@@ -86,7 +111,7 @@ export class Toastify {
               if ((pbDirection === 'increase' && progress >= 100) || (pbDirection === 'decrease' && progress <= 0)) {
                 clearInterval(progressInterval!);
                 progressInterval = null;
-                toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
+                toastifyElement.classList.add(getAnimationClass(true));
                 // Use transitionend for smoother removal
                 let fallbackTimeout: number | null = null;
                 const handleTransitionEnd = (): void => {
@@ -143,7 +168,7 @@ export class Toastify {
                   ) {
                     clearInterval(progressInterval!);
                     progressInterval = null;
-                    toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
+                    toastifyElement.classList.add(getAnimationClass(true));
                     globalThis.setTimeout(() => {
                       if (htmlContainer.contains(toastifyElement)) {
                         toastifyElement.remove();
@@ -162,13 +187,7 @@ export class Toastify {
         const startAutoClose = (): void => {
           autoCloseTimeout = Number(
             globalThis.setTimeout(() => {
-              toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-              globalThis.setTimeout(() => {
-                if (htmlContainer.contains(toastifyElement)) {
-                  toastifyElement.remove();
-                  guardedComplete();
-                }
-              }, 500);
+              dismiss(500);
             }, opts.duration)
           );
         };
@@ -200,27 +219,6 @@ export class Toastify {
 
     toastifyElement.className = `noap-toastify-toast noap-toastify-${options.direction} noap-toastify-anim-${animationType}${from}`;
     toastifyElement.classList.add(`noap-toastify-${type}`);
-    if (options.tapToDismiss) {
-      toastifyElement.classList.add('noap-toastify-tap-hover');
-      toastifyElement.addEventListener('click', () => {
-        if (progressInterval !== null) {
-          clearInterval(progressInterval);
-          progressInterval = null;
-        }
-        if (autoCloseTimeout !== null) {
-          clearTimeout(autoCloseTimeout);
-          autoCloseTimeout = null;
-        }
-        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-        globalThis.setTimeout(() => {
-          if (htmlContainer.contains(toastifyElement)) {
-            toastifyElement.remove();
-            guardedComplete();
-          }
-        }, 500);
-      });
-    }
-
     const parentElement = document.createElement('div');
     parentElement.className = 'noap-toastify-wrapper';
 
@@ -236,43 +234,59 @@ export class Toastify {
       messageElement.innerText = message;
     }
 
-    const icon = ToastifyIcons.getToastIcon(type);
-    if (options.showIcons && icon) {
-      const iconElement = document.createElement('div');
-      iconElement.className = `noap-toastify-icon ${type}`;
-      iconElement.innerHTML = icon;
-      toastifyElement.appendChild(iconElement);
-    }
-
     if (title) {
       parentElement.appendChild(titleElement);
     }
     parentElement.appendChild(messageElement);
     toastifyElement.appendChild(parentElement);
 
-    if (options.closeButton) {
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'noap-toastify-close';
-      closeBtn.innerHTML = ToastifyIcons.getCloseIcon();
-      closeBtn.addEventListener('click', () => {
-        if (progressInterval !== null) {
-          clearInterval(progressInterval);
-          progressInterval = null;
+    const syncIcon = (): void => {
+      const iconElement = toastifyElement.querySelector('.noap-toastify-icon') as HTMLElement | null;
+      const icon = ToastifyIcons.getToastIcon(currentType);
+      if (currentOptions.showIcons && icon) {
+        if (iconElement) {
+          iconElement.className = `noap-toastify-icon ${currentType}`;
+          iconElement.innerHTML = icon;
+        } else {
+          const newIconElement = document.createElement('div');
+          newIconElement.className = `noap-toastify-icon ${currentType}`;
+          newIconElement.innerHTML = icon;
+          toastifyElement.insertBefore(newIconElement, parentElement);
         }
-        if (autoCloseTimeout !== null) {
-          clearTimeout(autoCloseTimeout);
-          autoCloseTimeout = null;
-        }
-        toastifyElement.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
-        globalThis.setTimeout(() => {
-          if (htmlContainer.contains(toastifyElement)) {
-            toastifyElement.remove();
-            guardedComplete();
-          }
-        }, 200);
-      });
-      toastifyElement.appendChild(closeBtn);
-    }
+      } else {
+        iconElement?.remove();
+      }
+    };
+
+    const syncCloseButton = (): void => {
+      const closeButton = toastifyElement.querySelector('.noap-toastify-close') as HTMLButtonElement | null;
+      if (currentOptions.closeButton) {
+        if (closeButton) return;
+        const newCloseButton = document.createElement('button');
+        newCloseButton.className = 'noap-toastify-close';
+        newCloseButton.innerHTML = ToastifyIcons.getCloseIcon();
+        newCloseButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          dismiss(200);
+        });
+        toastifyElement.appendChild(newCloseButton);
+      } else {
+        closeButton?.remove();
+      }
+    };
+
+    const syncTapToDismiss = (): void => {
+      tapDismissAbortController.abort();
+      tapDismissAbortController = new AbortController();
+      toastifyElement.classList.toggle('noap-toastify-tap-hover', Boolean(currentOptions.tapToDismiss));
+      if (currentOptions.tapToDismiss) {
+        toastifyElement.addEventListener('click', () => dismiss(500), { signal: tapDismissAbortController.signal });
+      }
+    };
+
+    syncIcon();
+    syncCloseButton();
+    syncTapToDismiss();
 
     toastifyElement.addEventListener('toastify:evict', () => {
       if (progressInterval !== null) {
@@ -300,7 +314,7 @@ export class Toastify {
         const oldestToast = element as HTMLElement;
         if (!oldestToast.classList.contains('noap-toastify-hovering')) {
           oldestToast.dispatchEvent(new CustomEvent('toastify:evict'));
-          oldestToast.classList.add(`noap-toastify-anim-${animationType}-out${from}`);
+          oldestToast.classList.add(getAnimationClass(true));
           globalThis.setTimeout(() => {
             if (htmlContainer.contains(oldestToast)) {
               oldestToast.remove();
@@ -315,16 +329,19 @@ export class Toastify {
       if (completed) return;
 
       const { title: newTitle, message: newMessage, type: newType, ...optionChanges } = updateOpts;
+      const nextOptions = { ...currentOptions, ...optionChanges };
 
       if (newTitle !== undefined) {
         titleElement.innerText = newTitle;
-        if (!parentElement.contains(titleElement)) {
+        if (newTitle && !parentElement.contains(titleElement)) {
           parentElement.insertBefore(titleElement, parentElement.firstChild);
+        } else if (!newTitle) {
+          titleElement.remove();
         }
       }
 
       if (newMessage !== undefined) {
-        if (optionChanges.isHtml ?? currentOptions.isHtml) {
+        if (nextOptions.isHtml) {
           messageElement.innerHTML = newMessage;
         } else {
           messageElement.innerText = newMessage;
@@ -334,18 +351,22 @@ export class Toastify {
       if (newType !== undefined && newType !== currentType) {
         toastifyElement.classList.remove(`noap-toastify-${currentType}`);
         toastifyElement.classList.add(`noap-toastify-${newType}`);
-        const iconContainer = toastifyElement.querySelector('.noap-toastify-icon');
-        if (iconContainer && currentOptions.showIcons) {
-          const newIcon = ToastifyIcons.getToastIcon(newType);
-          iconContainer.className = `noap-toastify-icon ${newType}`;
-          iconContainer.innerHTML = newIcon;
-        }
         currentType = newType;
       }
 
       if (Object.keys(optionChanges).length > 0) {
-        currentOptions = { ...currentOptions, ...optionChanges };
+        const previousDirection = currentOptions.direction;
+        currentOptions = nextOptions;
+        if (currentOptions.direction !== previousDirection) {
+          toastifyElement.classList.remove(`noap-toastify-${previousDirection}`);
+          toastifyElement.classList.add(`noap-toastify-${currentOptions.direction}`);
+        }
+        syncIcon();
+        syncCloseButton();
+        syncTapToDismiss();
         setupDismissLogic(currentOptions);
+      } else if (newType !== undefined) {
+        syncIcon();
       }
     };
 
