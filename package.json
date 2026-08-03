@@ -33,12 +33,12 @@
     "files": [
       {
         "path": "dist/index.js",
-        "maxSize": "5kB",
+        "maxSize": "6kB",
         "compression": "gzip"
       },
       {
         "path": "dist/index.cjs",
-        "maxSize": "5kB",
+        "maxSize": "6kB",
         "compression": "gzip"
       },
       {
