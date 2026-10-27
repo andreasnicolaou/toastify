@@ -4,15 +4,7 @@ import { ToastifyHandle } from './toastify-handle';
 import { ToastifyQueue } from './toastify-queue';
 export { ToastifyHandle } from './toastify-handle';
 export type ToastifyAnimationType =
-  | 'fade'
-  | 'slide'
-  | 'zoom'
-  | 'bounce'
-  | 'flip'
-  | 'roll'
-  | 'lightspeed'
-  | 'jackinthebox'
-  | 'none';
+  'fade' | 'slide' | 'zoom' | 'bounce' | 'flip' | 'roll' | 'lightspeed' | 'jackinthebox' | 'none';
 export interface ToastifyOptions {
   duration?: number;
   isHtml?: boolean;
