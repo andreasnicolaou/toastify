@@ -31,4 +31,12 @@ export class ToastifyContainer {
   get containerPosition(): ToastifyPosition {
     return this.position;
   }
+
+  /**
+   * Removes the container from the DOM.
+   * @memberof ToastifyContainer
+   */
+  public destroy(): void {
+    this.container.remove();
+  }
 }

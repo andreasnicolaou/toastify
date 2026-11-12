@@ -36,18 +36,58 @@ export class Toastify {
     let dismissAbortController = new AbortController();
     let tapDismissAbortController = new AbortController();
     let currentType = type;
+    let actionAbortController = new AbortController();
     let currentOptions: ToastifyOptions = { ...options };
+    const lifetime = new AbortController();
+    const actionHandle = handle ?? new ToastifyHandle();
 
+    const timeouts = new Set<number>();
+    const later = (fn: () => void, ms: number): void => {
+      const id = Number(
+        globalThis.setTimeout(() => {
+          timeouts.delete(id);
+          fn();
+        }, ms)
+      );
+      timeouts.add(id);
+    };
+
+    // Releases every timer and listener this toast owns. Runs once, when the toast is done.
     const guardedComplete = (): void => {
       if (completed) return;
       completed = true;
+      clearInterval(progressInterval ?? undefined);
+      clearTimeout(autoCloseTimeout ?? undefined);
+      timeouts.forEach((id) => clearTimeout(id));
+      timeouts.clear();
+      dismissAbortController.abort();
+      tapDismissAbortController.abort();
+      actionAbortController.abort();
+      lifetime.abort();
       onComplete();
+    };
+
+    const setProgress = (value: number): void => {
+      progressBar?.style.setProperty('--noap-toastify-progress', `${value}%`);
+    };
+
+    const syncRole = (): void => {
+      const urgent = currentType === 'error' || currentType === 'warning';
+      toastifyElement.setAttribute('role', urgent ? 'alert' : 'status');
+      toastifyElement.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+      toastifyElement.setAttribute('aria-atomic', 'true');
     };
 
     const getAnimationClass = (out = false): string => {
       const animationType = currentOptions.animationType || 'fade';
       const suffix = Toastify.getAnimationSuffix(animationType, positionContainer);
       return `noap-toastify-anim-${animationType}${out ? '-out' : ''}${suffix}`;
+    };
+
+    // Plays the exit animation and closes the space the toast occupied so its neighbours slide into the gap
+    const exit = (element: HTMLElement): void => {
+      element.style.setProperty('--noap-toastify-height', `${element.offsetHeight}px`);
+      element.classList.add(getAnimationClass(true), 'noap-toastify-collapse');
     };
 
     const dismiss = (delay: number): void => {
@@ -59,8 +99,8 @@ export class Toastify {
         clearTimeout(autoCloseTimeout);
         autoCloseTimeout = null;
       }
-      toastifyElement.classList.add(getAnimationClass(true));
-      globalThis.setTimeout(() => {
+      exit(toastifyElement);
+      later(() => {
         if (htmlContainer.contains(toastifyElement)) {
           toastifyElement.remove();
           guardedComplete();
@@ -96,8 +136,8 @@ export class Toastify {
       if (opts.withProgressBar) {
         progressBar = document.createElement('div');
         progressBar.className = 'noap-toastify-progress-bar';
-        progressBar.style.width = `${pbDirection === 'increase' ? 0 : 100}%`;
         toastifyElement.appendChild(progressBar);
+        setProgress(pbDirection === 'increase' ? 0 : 100);
 
         progressInterval = Number(
           globalThis.setInterval(
@@ -107,29 +147,22 @@ export class Toastify {
               } else {
                 progress -= 1;
               }
-              progressBar!.style.width = `${progress}%`;
+              setProgress(progress);
               if ((pbDirection === 'increase' && progress >= 100) || (pbDirection === 'decrease' && progress <= 0)) {
                 clearInterval(progressInterval!);
                 progressInterval = null;
-                toastifyElement.classList.add(getAnimationClass(true));
+                exit(toastifyElement);
                 // Use transitionend for smoother removal
-                let fallbackTimeout: number | null = null;
                 const handleTransitionEnd = (): void => {
-                  if (fallbackTimeout !== null) {
-                    clearTimeout(fallbackTimeout);
-                    fallbackTimeout = null;
-                  }
                   if (htmlContainer.contains(toastifyElement)) {
                     toastifyElement.remove();
                     guardedComplete();
                   }
-                  toastifyElement.removeEventListener('transitionend', handleTransitionEnd);
-                  toastifyElement.removeEventListener('animationend', handleTransitionEnd);
                 };
-                toastifyElement.addEventListener('transitionend', handleTransitionEnd);
-                toastifyElement.addEventListener('animationend', handleTransitionEnd);
+                toastifyElement.addEventListener('transitionend', handleTransitionEnd, { signal });
+                toastifyElement.addEventListener('animationend', handleTransitionEnd, { signal });
                 // Fallback timeout
-                fallbackTimeout = Number(globalThis.setTimeout(handleTransitionEnd, 600));
+                later(handleTransitionEnd, 600);
               }
             },
             pbDuration === 0 ? 100 : pbDuration
@@ -161,15 +194,15 @@ export class Toastify {
                   } else {
                     progress -= 1;
                   }
-                  progressBar!.style.width = `${progress}%`;
+                  setProgress(progress);
                   if (
                     (pbDirection === 'increase' && progress >= 100) ||
                     (pbDirection === 'decrease' && progress <= 0)
                   ) {
                     clearInterval(progressInterval!);
                     progressInterval = null;
-                    toastifyElement.classList.add(getAnimationClass(true));
-                    globalThis.setTimeout(() => {
+                    exit(toastifyElement);
+                    later(() => {
                       if (htmlContainer.contains(toastifyElement)) {
                         toastifyElement.remove();
                         guardedComplete();
@@ -246,11 +279,11 @@ export class Toastify {
       if (currentOptions.showIcons && icon) {
         if (iconElement) {
           iconElement.className = `noap-toastify-icon ${currentType}`;
-          iconElement.innerHTML = icon;
+          iconElement.replaceChildren(icon);
         } else {
           const newIconElement = document.createElement('div');
           newIconElement.className = `noap-toastify-icon ${currentType}`;
-          newIconElement.innerHTML = icon;
+          newIconElement.appendChild(icon);
           toastifyElement.insertBefore(newIconElement, parentElement);
         }
       } else {
@@ -263,16 +296,44 @@ export class Toastify {
       if (currentOptions.closeButton) {
         if (closeButton) return;
         const newCloseButton = document.createElement('button');
+        newCloseButton.type = 'button';
         newCloseButton.className = 'noap-toastify-close';
-        newCloseButton.innerHTML = ToastifyIcons.getCloseIcon();
-        newCloseButton.addEventListener('click', (event) => {
-          event.stopPropagation();
-          dismiss(200);
-        });
+        newCloseButton.setAttribute('aria-label', 'Close');
+        newCloseButton.appendChild(ToastifyIcons.getCloseIcon());
+        newCloseButton.addEventListener(
+          'click',
+          (event) => {
+            event.stopPropagation();
+            dismiss(300);
+          },
+          { signal: lifetime.signal }
+        );
         toastifyElement.appendChild(newCloseButton);
       } else {
         closeButton?.remove();
       }
+    };
+
+    const syncAction = (): void => {
+      actionAbortController.abort();
+      actionAbortController = new AbortController();
+      toastifyElement.querySelector('.noap-toastify-action')?.remove();
+      const action = currentOptions.action;
+      if (!action) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'noap-toastify-action';
+      button.textContent = action.label;
+      button.addEventListener(
+        'click',
+        (event) => {
+          event.stopPropagation();
+          action.onClick(actionHandle);
+          if (action.dismissOnClick !== false) dismiss(300);
+        },
+        { signal: actionAbortController.signal }
+      );
+      parentElement.appendChild(button);
     };
 
     const syncTapToDismiss = (): void => {
@@ -284,21 +345,14 @@ export class Toastify {
       }
     };
 
+    syncRole();
     syncIcon();
     syncCloseButton();
+    syncAction();
     syncTapToDismiss();
 
-    toastifyElement.addEventListener('toastify:evict', () => {
-      if (progressInterval !== null) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-      if (autoCloseTimeout !== null) {
-        clearTimeout(autoCloseTimeout);
-        autoCloseTimeout = null;
-      }
-      guardedComplete();
-    });
+    // Dispatched by the queue when this toast is evicted or the manager is destroyed
+    toastifyElement.addEventListener('toastify:evict', guardedComplete, { signal: lifetime.signal });
 
     setupDismissLogic(options);
 
@@ -314,7 +368,8 @@ export class Toastify {
         const oldestToast = element as HTMLElement;
         if (!oldestToast.classList.contains('noap-toastify-hovering')) {
           oldestToast.dispatchEvent(new CustomEvent('toastify:evict'));
-          oldestToast.classList.add(getAnimationClass(true));
+          exit(oldestToast);
+          // Not tracked by `later`: this removes another toast and must outlive this one
           globalThis.setTimeout(() => {
             if (htmlContainer.contains(oldestToast)) {
               oldestToast.remove();
@@ -326,7 +381,8 @@ export class Toastify {
     }
 
     const updateToast = (updateOpts: ToastifyUpdateOptions): void => {
-      if (completed) return;
+      // Ignore updates once the toast is gone or on its way out
+      if (completed || toastifyElement.classList.contains('noap-toastify-collapse')) return;
 
       const { title: newTitle, message: newMessage, type: newType, ...optionChanges } = updateOpts;
       const nextOptions = { ...currentOptions, ...optionChanges };
@@ -352,6 +408,7 @@ export class Toastify {
         toastifyElement.classList.remove(`noap-toastify-${currentType}`);
         toastifyElement.classList.add(`noap-toastify-${newType}`);
         currentType = newType;
+        syncRole();
       }
 
       if (Object.keys(optionChanges).length > 0) {
@@ -363,6 +420,7 @@ export class Toastify {
         }
         syncIcon();
         syncCloseButton();
+        syncAction();
         syncTapToDismiss();
         setupDismissLogic(currentOptions);
       } else if (newType !== undefined) {

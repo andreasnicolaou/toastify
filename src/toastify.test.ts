@@ -266,7 +266,7 @@ describe('Toastify', () => {
       (closeButton as HTMLElement).click();
     }
     expect(toastifyElement?.classList.contains('noap-toastify-anim-fade-out')).toBe(true);
-    jest.advanceTimersByTime(200);
+    jest.advanceTimersByTime(300);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
@@ -423,7 +423,7 @@ describe('Toastify', () => {
     expect(closeButton).toBeInTheDocument();
     if (closeButton) {
       (closeButton as HTMLElement).click();
-      jest.advanceTimersByTime(200);
+      jest.advanceTimersByTime(300);
       expect(onComplete).toHaveBeenCalledTimes(1);
     }
   });
@@ -825,7 +825,7 @@ describe('Toastify', () => {
     handle.update({ withProgressBar: true, progressBarDuration: 1 });
     expect(htmlContainer.element.querySelector('.noap-toastify-progress-bar')).toBeInTheDocument();
 
-    jest.advanceTimersByTime(200);
+    jest.advanceTimersByTime(300);
     simulateToastRemoval(htmlContainer);
     expect(onCompleteUpdate).toHaveBeenCalledTimes(1);
   });

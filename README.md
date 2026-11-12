@@ -126,21 +126,23 @@ toast.info('Heads Up!', 'You have new updates available.', { closeButton: false 
 
 ## Styling
 
-- **Default:** Import or link `dist/styles.css` for ready-to-use styles.
+- **Default:** Import or link the stylesheet for ready-to-use styles. The library **never injects a `<style>` tag at runtime**, so you must load it yourself:
+  `import '@andreasnicolaou/toastify/styles.css'` (or `.../dist/styles.css`), a `<link>` tag, or the `styles` array in `angular.json`.
+- **Spacing:** the gap between stacked toasts is the CSS variable `--noap-toastify-gap` (default `12px`) on `.noap-toastify-container`. Closing toasts collapse smoothly so the others slide into the gap.
 - **Custom:** Pass a `customClasses` option to ToastifyManager to add your own classes and override styles as needed.
 
 ## API
 
 ### Toast Methods
 
-| Function                            | Description               | Options (per toast, overrides manager)                                                                                                                           |
-| ----------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `default(title, message, options?)` | Displays a default toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
-| `light(title, message, options?)`   | Displays a light toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
-| `error(title, message, options?)`   | Displays an error toast.  | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
-| `success(title, message, options?)` | Displays a success toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
-| `warning(title, message, options?)` | Displays a warning toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
-| `info(title, message, options?)`    | Displays an info toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection` |
+| Function                            | Description               | Options (per toast, overrides manager)                                                                                                                                                 |
+| ----------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default(title, message, options?)` | Displays a default toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection`, `position`, `action` |
+| `light(title, message, options?)`   | Displays a light toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection`, `position`, `action` |
+| `error(title, message, options?)`   | Displays an error toast.  | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection`, `position`, `action` |
+| `success(title, message, options?)` | Displays a success toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection`, `position`, `action` |
+| `warning(title, message, options?)` | Displays a warning toast. | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection`, `position`, `action` |
+| `info(title, message, options?)`    | Displays an info toast.   | `duration`, `isHtml`, `withProgressBar`, `progressBarDuration`, `closeButton`, `direction`, `showIcons`, `animationType`, `tapToDismiss`, `progressBarDirection`, `position`, `action` |
 
 All options can be set globally on the manager or per-toast (per call).
 
@@ -161,11 +163,83 @@ All options can be set globally on the manager or per-toast (per call).
 | `tapToDismiss`         | Dismiss toast on click/tap.                                                                           | false         |
 | `newestOnTop`          | Stack newest toasts on top (`true`) or bottom (`false`).                                              | false         |
 | `progressBarDirection` | Progress Bar direction either `increase` or `decrease`.                                               | decrease      |
+| `position`             | Per-toast position (any `ToastifyPosition`). Falls back to the manager's position.                    | manager's     |
+| `action`               | Button inside the toast: `{ label, onClick(handle), dismissOnClick? }`.                               | none          |
+
+### Per-toast position
+
+Pass `position` to show a single toast somewhere other than the manager's position. Containers are created lazily on first use and share the manager's `customClasses`. Each position keeps its own queue, so `maxToasts` and `newestOnTop` apply **per position**.
+
+```ts
+const toast = new ToastifyManager('top-right');
+
+toast.info('Hello', 'Top right, as usual.');
+toast.error('Offline', 'Connection lost.', { position: 'bottom-center', duration: 0 });
+```
+
+`position` is fixed once a toast is shown: `handle.update()` ignores it. Empty containers stay in the DOM (as with the manager's own container).
+
+### Action button
+
+`action` renders a `<button type="button" class="noap-toastify-action">` after the message. The label is always set as text (safe with `isHtml`). The toast is dismissed after the click unless `dismissOnClick: false`. Clicks on the button never trigger `tapToDismiss`.
+
+```ts
+toast.info('New version available', 'Reload to get the latest update.', {
+  duration: 0,
+  action: { label: 'Reload', onClick: () => location.reload() },
+});
+
+// keep the toast open and update it from the handler
+toast.info('Upload', 'Failed.', {
+  duration: 0,
+  action: {
+    label: 'Retry',
+    dismissOnClick: false,
+    onClick: (handle) => handle.update({ message: 'Retrying...', action: undefined }),
+  },
+});
+```
+
+Restyle it through `.noap-toastify-action` or its CSS variables: `--noap-toastify-action-bg`, `--noap-toastify-action-fg`, `--noap-toastify-action-hover-bg`, `--noap-toastify-action-hover-fg`.
+
+### Cleaning up with `destroy()`
+
+`destroy()` removes every container the manager created, drops queued toasts, and clears all timers and listeners of the visible ones. The manager can be reused afterwards (containers are created again on demand).
+
+```ts
+// Angular
+private readonly toast = new ToastifyManager('top-right');
+constructor() {
+  inject(DestroyRef).onDestroy(() => this.toast.destroy());
+}
+```
+
+> **Angular / zone.js:** progress bars use `setInterval`, which zone.js treats as a task that triggers change detection on every tick. Create the manager and show toasts inside `NgZone.runOutsideAngular()` if you use `withProgressBar`.
+
+### Environment
+
+Creating a `ToastifyManager` (or calling `destroy()`) never touches the DOM and works without a `document`. The first container is created when the first toast is shown; showing a toast without a `document` throws a `TypeError`. Guard calls on the server (for example with `isPlatformBrowser`).
 
 ### Theming & Customization
 
 - Use the `customClasses` option to add your own classes for custom themes.
 - Use the built-in `light` type for a light toast theme: `toast.light('Title', 'Message')`.
+
+---
+
+## Security
+
+- The **title**, the **action label** and every message are inserted as text. Only `isHtml: true` (default `false`) renders the message as HTML, via `innerHTML`.
+- **Never use `isHtml` with untrusted text** (user input, or API strings you do not fully control). The library ships no sanitizer: sanitize the string yourself first, or keep `isHtml` off and pass plain text.
+- `isHtml` is the only code path that parses HTML. If your page enforces Trusted Types (`require-trusted-types-for 'script'`), leave `isHtml` off. Icons are built with `createElementNS`, so they work under Trusted Types.
+- **CSP:** no `<style>` element is created and no `style` attribute is written. Progress and collapse values use CSS custom properties set through `style.setProperty()`, which a strict `style-src` allows. There is no `eval` or `new Function`.
+
+## Accessibility
+
+- Toasts get `role="status"` and `aria-live="polite"` for `info`, `success`, `default` and `light`, and `role="alert"` with `aria-live="assertive"` for `error` and `warning`. The role follows the type when you call `handle.update({ type })`.
+- The close button is a `<button type="button" aria-label="Close">`. The label is English only for now.
+- Animations and transitions are shortened to near-zero under `prefers-reduced-motion: reduce`.
+- `tapToDismiss` is a pointer-only convenience. Use `closeButton` or an `action` for keyboard users.
 
 ---
 
@@ -212,19 +286,20 @@ try {
 
 ### `ToastifyUpdateOptions`
 
-| Property              | Type           | Description                                  |
-| --------------------- | -------------- | -------------------------------------------- |
-| `title`               | `string`       | Replaces the toast title text                |
-| `message`             | `string`       | Replaces the toast message text              |
-| `type`                | `ToastifyType` | Swaps the visual type (colour + icon)        |
-| `duration`            | `number`       | Restarts auto-dismiss timer (0 = indefinite) |
-| `withProgressBar`     | `boolean`      | Adds or removes the progress bar             |
-| `progressBarDuration` | `number`       | Interval (ms) per progress-bar tick          |
-| `closeButton`         | `boolean`      | Shows or hides the close button              |
-| `isHtml`              | `boolean`      | Interprets message as raw HTML               |
-| `tapToDismiss`        | `boolean`      | Enables or disables tap-to-dismiss           |
+| Property              | Type                          | Description                                              |
+| --------------------- | ----------------------------- | -------------------------------------------------------- |
+| `title`               | `string`                      | Replaces the toast title text                            |
+| `message`             | `string`                      | Replaces the toast message text                          |
+| `type`                | `ToastifyType`                | Swaps the visual type (colour + icon)                    |
+| `duration`            | `number`                      | Restarts auto-dismiss timer (0 = indefinite)             |
+| `withProgressBar`     | `boolean`                     | Adds or removes the progress bar                         |
+| `progressBarDuration` | `number`                      | Interval (ms) per progress-bar tick                      |
+| `closeButton`         | `boolean`                     | Shows or hides the close button                          |
+| `isHtml`              | `boolean`                     | Interprets message as raw HTML                           |
+| `tapToDismiss`        | `boolean`                     | Enables or disables tap-to-dismiss                       |
+| `action`              | `ToastifyAction \| undefined` | Sets, changes or removes (`undefined`) the action button |
 
-Any field from `ToastifyOptions` is accepted — only the keys you provide are changed, all others remain as-is.
+Any field from `ToastifyOptions` except `position` is accepted — only the keys you provide are changed, all others remain as-is.
 
 > **Tip:** Use `duration: 0` on the initial call to prevent auto-dismiss while the operation is in progress, then supply a `duration` (or `withProgressBar: true`) on the final `update()` call to auto-dismiss once done.
 
