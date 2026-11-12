@@ -21,6 +21,7 @@ export default [
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationMap: false,
+        removeComments: true,
         tslib: 'bundled',
       }),
       postcss({
@@ -46,6 +47,7 @@ export default [
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationMap: false,
+        removeComments: true,
         tslib: 'bundled',
       }),
       postcss({
@@ -71,6 +73,7 @@ export default [
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationMap: false,
+        removeComments: true,
         tslib: 'bundled',
       }),
       postcss({
@@ -96,6 +99,7 @@ export default [
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationMap: false,
+        removeComments: true,
         tslib: 'bundled',
       }),
       postcss({
@@ -114,6 +118,16 @@ export default [
       format: 'es',
     },
     external: [/\.css$/], // ignore .css files
+    plugins: [dts({ respectExternal: true, exclude: [/\.css$/] })],
+  },
+  // Type definitions for CommonJS consumers (node16 / nodenext resolve .d.cts for require())
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/index.d.cts',
+      format: 'es',
+    },
+    external: [/\.css$/],
     plugins: [dts({ respectExternal: true, exclude: [/\.css$/] })],
   },
 ];

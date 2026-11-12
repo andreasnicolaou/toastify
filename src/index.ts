@@ -16,6 +16,14 @@ export interface ToastifyOptions {
   animationType?: ToastifyAnimationType;
   tapToDismiss?: boolean;
   progressBarDirection?: 'decrease' | 'increase';
+  position?: ToastifyPosition;
+  action?: ToastifyAction;
+}
+
+export interface ToastifyAction {
+  label: string;
+  onClick: (handle: ToastifyHandle) => void;
+  dismissOnClick?: boolean;
 }
 
 export type ToastifyPosition =
@@ -31,7 +39,8 @@ export type ToastifyPosition =
 
 export type ToastifyType = 'success' | 'error' | 'warning' | 'info' | 'default' | 'light';
 
-export type ToastifyUpdateOptions = Partial<ToastifyOptions> & {
+/** `position` is not updatable: a visible toast never moves between containers. */
+export type ToastifyUpdateOptions = Partial<Omit<ToastifyOptions, 'position'>> & {
   title?: string;
   message?: string;
   type?: ToastifyType;
@@ -51,14 +60,21 @@ export type ToastifyUpdateOptions = Partial<ToastifyOptions> & {
  *   - direction (optional): The direction of the text within the toast (default is 'ltr', left-to-right).
  *   - animationType (optional): The type of animation for the toast (default is 'fade', use 'none' for no animation).
  *   - progressBarDirection (optional): The direction of the progress bar animation (default is 'decrease').
- * @throws Error if called in a non-browser environment.
+ *   - action (optional): A button rendered inside the toast ({ label, onClick, dismissOnClick }).
+ * Any toast method also accepts a per-toast `position`; containers for other positions are created lazily.
+ * Nothing touches the DOM until the first toast is shown, so the manager can be created without a `document`.
+ * @throws TypeError when a toast is shown without a `document` (non-browser environment).
  * @returns A new instance of ToastifyManager.
  * @memberof ToastifyManager
  * @author Andreas Nicolaou
  */
 export class ToastifyManager {
+  private readonly customClasses: string | undefined;
+  private readonly defaultPosition: ToastifyPosition;
+  private readonly maxToasts: number;
+  private readonly newestOnTop: boolean | undefined;
   private readonly options!: ToastifyOptions;
-  private readonly toastifyQueue!: ToastifyQueue;
+  private readonly toastifyQueues = new Map<ToastifyPosition, ToastifyQueue>();
   constructor(
     position: ToastifyPosition,
     /* istanbul ignore next */ {
@@ -70,10 +86,6 @@ export class ToastifyManager {
       Object.prototype
     )
   ) {
-    /* istanbul ignore next */
-    if (typeof document === 'undefined') {
-      throw new TypeError('document is not available. Toastify can only be used in a browser environment.');
-    }
     this.options = {
       duration: 3000,
       isHtml: false,
@@ -87,9 +99,11 @@ export class ToastifyManager {
       progressBarDirection: 'decrease',
       ...options,
     };
-    const toastifyContainer = new ToastifyContainer(position, customClasses);
+    this.defaultPosition = position;
+    this.customClasses = customClasses;
     /* istanbul ignore next */
-    this.toastifyQueue = new ToastifyQueue(toastifyContainer, maxToasts ?? 5, newestOnTop);
+    this.maxToasts = maxToasts ?? 5;
+    this.newestOnTop = newestOnTop;
   }
 
   /**
@@ -106,7 +120,19 @@ export class ToastifyManager {
     message: string,
     options: ToastifyOptions = Object.create(Object.prototype)
   ): ToastifyHandle {
-    return this.toastifyQueue.enqueue(title, message, 'default', { ...this.options, ...options });
+    return this.show(title, message, 'default', options);
+  }
+
+  /**
+   * Removes every container this manager created and releases all toasts, timers and listeners.
+   * Queued toasts are dropped. The manager can still be used afterwards: containers are created again on demand.
+   * @memberof ToastifyManager
+   */
+  public destroy(): void {
+    for (const queue of this.toastifyQueues.values()) {
+      queue.destroy();
+    }
+    this.toastifyQueues.clear();
   }
 
   /**
@@ -123,7 +149,7 @@ export class ToastifyManager {
     message: string,
     options: ToastifyOptions = Object.create(Object.prototype)
   ): ToastifyHandle {
-    return this.toastifyQueue.enqueue(title, message, 'error', { ...this.options, ...options });
+    return this.show(title, message, 'error', options);
   }
 
   /**
@@ -140,7 +166,7 @@ export class ToastifyManager {
     message: string,
     options: ToastifyOptions = Object.create(Object.prototype)
   ): ToastifyHandle {
-    return this.toastifyQueue.enqueue(title, message, 'info', { ...this.options, ...options });
+    return this.show(title, message, 'info', options);
   }
 
   /**
@@ -157,7 +183,7 @@ export class ToastifyManager {
     message: string,
     options: ToastifyOptions = Object.create(Object.prototype)
   ): ToastifyHandle {
-    return this.toastifyQueue.enqueue(title, message, 'light', { ...this.options, ...options });
+    return this.show(title, message, 'light', options);
   }
 
   /**
@@ -174,7 +200,7 @@ export class ToastifyManager {
     message: string,
     options: ToastifyOptions = Object.create(Object.prototype)
   ): ToastifyHandle {
-    return this.toastifyQueue.enqueue(title, message, 'success', { ...this.options, ...options });
+    return this.show(title, message, 'success', options);
   }
 
   /**
@@ -190,6 +216,27 @@ export class ToastifyManager {
     message: string,
     options: ToastifyOptions = Object.create(Object.prototype)
   ): ToastifyHandle {
-    return this.toastifyQueue.enqueue(title, message, 'warning', { ...this.options, ...options });
+    return this.show(title, message, 'warning', options);
+  }
+
+  /**
+   * Returns the queue for a position, creating its container and queue on first use.
+   * Each position has its own queue so maxToasts and newestOnTop apply per container.
+   */
+  private getQueue(position: ToastifyPosition): ToastifyQueue {
+    let queue = this.toastifyQueues.get(position);
+    if (!queue) {
+      queue = new ToastifyQueue(new ToastifyContainer(position, this.customClasses), this.maxToasts, this.newestOnTop);
+      this.toastifyQueues.set(position, queue);
+    }
+    return queue;
+  }
+
+  private show(title: string, message: string, type: ToastifyType, options: ToastifyOptions): ToastifyHandle {
+    if (typeof document === 'undefined') {
+      throw new TypeError('document is not available. Toastify can only be used in a browser environment.');
+    }
+    const merged = { ...this.options, ...options };
+    return this.getQueue(merged.position ?? this.defaultPosition).enqueue(title, message, type, merged);
   }
 }

@@ -8,308 +8,425 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50%' x='50%' text-anchor='middle' dominant-baseline='central' font-size='48'%3E%F0%9F%92%A5%3C/text%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="https://unpkg.com/@andreasnicolaou/toastify/dist/styles.css" />
+    <script>
+      // Add ?local to the URL to test the local build in ../dist instead of the published unpkg one
+      var toastifyLocal = location.search.includes('local');
+      var toastifyBase = toastifyLocal ? '../dist/' : 'https://unpkg.com/@andreasnicolaou/toastify/dist/';
+      document.write('<link rel="stylesheet" href="' + toastifyBase + 'styles.css" />');
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-      .theme-toggle {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1050;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-      }
-      .theme-toggle:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-      }
-      .theme-icon {
-        width: 24px;
-        height: 24px;
-        fill: currentColor;
-        transition: transform 0.3s ease;
-      }
-      .theme-toggle:hover .theme-icon {
-        transform: rotate(15deg);
-      }
-      #toastClearButton,
-      #toastButton {
-        border-radius: 999px;
-        font-size: 1rem;
-        padding: 0.375rem 1.1rem;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-        border: none;
-        transition:
-          background 0.2s,
-          color 0.2s,
-          box-shadow 0.2s;
-      }
-      #toastClearButton {
-        background: var(--bs-body-bg);
-        color: var(--bs-body-color);
-        border: 1px solid var(--bs-border-color-translucent, #dee2e6);
-      }
-      #toastClearButton:hover,
-      #toastClearButton:focus {
-        background: var(--bs-secondary-bg, #f1f3f5);
-        color: var(--bs-body-color);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      }
-      #toastButton {
-        background: var(--bs-primary);
-        color: var(--bs-btn-color, #fff);
-        border: 1px solid var(--bs-primary);
-      }
-      #toastButton:hover,
-      #toastButton:focus {
-        background: var(--bs-primary, #0d6efd);
-        color: var(--bs-btn-color, #fff);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
-      }
-      @media (max-width: 600px) {
-        #toastClearButton,
-        #toastButton {
-          font-size: 0.95rem;
-          padding: 0.45rem 0.7rem;
-        }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Arial,
+          sans-serif;
       }
       .loading {
         overflow: hidden;
       }
-      .cdn-source-hover {
-        text-decoration: none;
-        transition: text-decoration 0.2s;
+      .section-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--bs-secondary-color);
       }
-      .cdn-source-hover:hover {
-        text-decoration: underline;
+      /* 3x3 position picker */
+      .pos-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        max-width: 240px;
+      }
+      .pos-picker .pos-cell {
+        height: 38px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 6px;
+        background: var(--bs-body-bg);
+        color: var(--bs-secondary-color);
+        font-size: 0.7rem;
+        padding: 0;
+      }
+      .pos-picker .pos-cell:hover:not(:disabled) {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+      }
+      .pos-picker .pos-cell.active {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+      }
+      .pos-picker .pos-cell:disabled {
+        opacity: 0.25;
+        cursor: default;
+      }
+      .pos-picker .pos-none {
+        grid-column: 1 / -1;
+        height: 32px;
+      }
+      .code-preview {
+        font-size: 0.8rem;
+        min-height: 0;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
       }
     </style>
   </head>
-  <body style="font-family: Arial, sans-serif" class="bg-body-secondary loading">
-    <button
-      class="btn btn-outline-secondary theme-toggle"
-      id="theme-toggle"
-      type="button"
-      aria-label="Toggle dark mode"
-    >
-      <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <title>Toggle theme</title>
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
-    </button>
-    <div class="container-xl p-3">
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <h1 class="text-center mb-4" style="padding-left: 50px; padding-right: 50px">
-            Toastify – Modern Toast Notifications
-          </h1>
-          <div class="alert alert-info" role="alert">
-            <strong>Live Demo:</strong> Testing the published package from npm<br />
-            <strong>Package:</strong> <code class="font-monospace">@andreasnicolaou/toastify</code><br />
-            <strong>CDN Source:</strong>
-            <code class="font-monospace">https://unpkg.com/@andreasnicolaou/toastify/dist/index.umd.min.js</code>
-            <span id="cdn-status" class="ms-2" data-toggle="tooltip" title="Loading...">
-              <div class="spinner-border spinner-border-sm text-primary" aria-label="Loading CDN">
-                <span class="visually-hidden">Loading...</span>
-              </div> </span
-            ><br />
-            <strong>Global Variable:</strong> <code class="font-monospace">toastify</code>
-          </div>
-          <h2 class="text-body-emphasis border-bottom border-secondary border-2 pb-1 mb-3 mt-4">Try It Yourself</h2>
-          <div id="interactive-section">
-            <!-- Toastify demo form -->
-            <form id="toastify-form">
-              <div class="container-fluid px-0">
-                <div class="row g-3">
-                  <div class="col-md-12">
-                    <label for="toastPosition" class="form-label">Toast Position:</label>
-                    <select id="toastPosition" class="form-select form-select">
-                      <option value="top-left">Top Left</option>
-                      <option value="top-right" selected>Top Right</option>
-                      <option value="top-center">Top Center</option>
-                      <option value="top-center-full">Top Center Full</option>
-                      <option value="center">Center</option>
-                      <option value="bottom-left">Bottom Left</option>
-                      <option value="bottom-right">Bottom Right</option>
-                      <option value="bottom-center">Bottom Center</option>
-                      <option value="bottom-center-full">Bottom Center Full</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="row g-3 mt-0">
-                  <div class="col-md-6">
-                    <label for="toastDirection" class="form-label">Toastify Direction:</label>
-                    <select id="toastDirection" class="form-select form-select">
-                      <option value="ltr" selected>LTR</option>
-                      <option value="rtl">RTL</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="progressBarDirection" class="form-label"
-                      >Progress Bar Direction:
-                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
-                    </label>
-                    <select id="progressBarDirection" class="form-select form-select">
-                      <option value="decrease" selected>Decreasing</option>
-                      <option value="increase">Increasing</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="row g-3 mt-0">
-                  <div class="col-md-6">
-                    <label for="toastType" class="form-label">Toastify Type:</label>
-                    <select id="toastType" class="form-select form-select">
-                      <option value="default">Default</option>
-                      <option value="light">Light</option>
-                      <option value="success" selected>Success</option>
-                      <option value="warning">Warning</option>
-                      <option value="info">Info</option>
-                      <option value="error">Error</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="customClasses" class="form-label">Custom classes:</label>
-                    <input type="text" id="customClasses" class="form-control form-control" value="" />
-                  </div>
-                </div>
-                <div class="row g-3 mt-0">
-                  <div class="col-md-6">
-                    <label for="duration" class="form-label">Duration (ms):</label>
-                    <span class="form-text text-secondary ms-1" style="font-size: 0.97em">(0 = never expires)</span>
-                    <input type="number" id="duration" class="form-control form-control" value="3000" />
-                  </div>
-                  <div class="col-md-6">
-                    <label for="progressBarDuration" class="form-label">Progress Bar Duration (ms):</label>
-                    <input type="number" id="progressBarDuration" class="form-control form-control" value="100" />
-                  </div>
-                </div>
-                <div class="row g-3 mt-0">
-                  <div class="col-md-6">
-                    <label for="maxToasts" class="form-label">Max Toasts:</label>
-                    <input type="number" id="maxToasts" class="form-control form-control" value="5" />
-                  </div>
-                  <div class="col-md-6">
-                    <label for="animationType" class="form-label"
-                      >Animation Type:
-                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
-                    </label>
-                    <select id="animationType" class="form-select form-select">
-                      <option value="fade" selected>Fade</option>
-                      <option value="slide">Slide</option>
-                      <option value="zoom">Zoom</option>
-                      <option value="bounce">Bounce</option>
-                      <option value="flip">Flip</option>
-                      <option value="roll">Roll (new)</option>
-                      <option value="lightspeed">LightSpeed (new)</option>
-                      <option value="jackinthebox">JackInTheBox (new)</option>
-                      <option value="none">None (no animation)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="row g-3 mt-0">
-                  <div class="col-md-12">
-                    <label for="toastTitle" class="form-label">Title:</label>
-                    <input
-                      type="text"
-                      id="toastTitle"
-                      class="form-control form-control"
-                      placeholder="Enter toast title..."
-                    />
-                  </div>
-                </div>
-                <div class="row g-3 mt-0">
-                  <div class="col-12">
-                    <label for="toastMessage" class="form-label">Message:</label>
-                    <textarea
-                      id="toastMessage"
-                      class="form-control form-control"
-                      rows="3"
-                      placeholder="Enter toast message..."
-                    ></textarea>
+  <body class="bg-body-secondary loading" data-bs-theme="dark">
+    <div class="container-xl p-3 p-lg-4">
+      <header class="text-center mb-4">
+        <h1 class="h2 mb-2">Toastify – Modern Toast Notifications</h1>
+        <p class="text-body-secondary mb-3">
+          Lightweight, framework-agnostic toasts. Change the options, watch the code update, and click
+          <strong>Show toast</strong>.
+        </p>
+        <div class="d-inline-flex align-items-center flex-wrap justify-content-center gap-2 small">
+          <span class="badge text-bg-secondary" id="source-badge">Loading…</span>
+          <code class="font-monospace" id="source-url"></code>
+          <span id="cdn-status" data-toggle="tooltip" title="Loading...">
+            <span class="spinner-border spinner-border-sm text-primary" aria-label="Loading CDN"></span>
+          </span>
+        </div>
+      </header>
+
+      <div class="row g-4">
+        <!-- Controls -->
+        <div class="col-lg-7">
+          <div class="card shadow-sm h-100">
+            <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-content"
+                    type="button"
+                    role="tab"
+                  >
+                    Content
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-placement"
+                    type="button"
+                    role="tab"
+                  >
+                    Placement
+                    <span class="badge rounded-pill text-bg-success ms-1">New</span>
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-behavior" type="button" role="tab">
+                    Behavior
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-appearance"
+                    type="button"
+                    role="tab"
+                  >
+                    Appearance
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <form id="toastify-form" class="card-body" onsubmit="return false;">
+              <div class="tab-content">
+                <!-- Content -->
+                <div class="tab-pane fade show active" id="tab-content" role="tabpanel">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="toastType" class="form-label">Type</label>
+                      <select id="toastType" class="form-select">
+                        <option value="default">Default</option>
+                        <option value="light">Light</option>
+                        <option value="success" selected>Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                        <option value="error">Error</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="toastTitle" class="form-label">Title</label>
+                      <input
+                        type="text"
+                        id="toastTitle"
+                        class="form-control"
+                        placeholder="Random if empty"
+                        autocomplete="off"
+                      />
+                    </div>
+                    <div class="col-12">
+                      <label for="toastMessage" class="form-label">Message</label>
+                      <textarea
+                        id="toastMessage"
+                        class="form-control"
+                        rows="2"
+                        placeholder="Random if empty"
+                      ></textarea>
+                    </div>
+                    <div class="col-12">
+                      <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="isHtml" />
+                        <label class="form-check-label" for="isHtml">
+                          Message is HTML
+                          <span class="form-text ms-1">(the action label is always plain text)</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-12"><hr class="my-1" /></div>
+                    <div class="col-12">
+                      <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="withAction" />
+                        <label class="form-check-label" for="withAction">
+                          Action button
+                          <span class="badge rounded-pill text-bg-success ms-1">New</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="actionLabel" class="form-label">Action label</label>
+                      <input type="text" id="actionLabel" class="form-control" value="Undo" autocomplete="off" />
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                      <div class="form-check form-switch mb-2">
+                        <input type="checkbox" class="form-check-input" id="actionDismiss" checked />
+                        <label class="form-check-label" for="actionDismiss">Dismiss on click</label>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div class="row g-3 mt-0">
-                  <div class="col-12 d-flex flex-wrap align-items-center gap-4">
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" class="form-check-input" id="withProgressBar" />
-                      <label class="form-check-label" for="withProgressBar">Show Progress Bar</label>
+                <!-- Placement -->
+                <div class="tab-pane fade" id="tab-placement" role="tabpanel">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <div class="section-title mb-2">Manager position</div>
+                      <div class="pos-picker" id="pickerMain"></div>
+                      <div class="form-text mt-2">The default for every toast (constructor argument).</div>
                     </div>
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" class="form-check-input" id="isHtml" />
-                      <label class="form-check-label" for="isHtml"
-                        >Enable Html
-                        <span class="form-text text-secondary ms-1" style="font-size: 0.9em">(message)</span></label
-                      >
+                    <div class="col-md-6">
+                      <div class="section-title mb-2">
+                        This toast only
+                        <span class="badge rounded-pill text-bg-success ms-1">New</span>
+                      </div>
+                      <div class="pos-picker" id="pickerOverride"></div>
+                      <div class="form-text mt-2">
+                        Sets <code>position</code> on one toast. Each position gets its own container and queue.
+                      </div>
                     </div>
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" class="form-check-input" id="showIcons" checked />
-                      <label class="form-check-label" for="showIcons">Show Icons</label>
+                    <div class="col-md-6">
+                      <label for="maxToasts" class="form-label">Max toasts (per position)</label>
+                      <input type="number" id="maxToasts" class="form-control" value="5" min="1" />
                     </div>
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" class="form-check-input" id="closeButton" checked />
-                      <label class="form-check-label" for="closeButton">Show Close Button</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" class="form-check-input" id="tapToDismiss" />
-                      <label class="form-check-label" for="tapToDismiss">Tap to Dismiss</label>
-                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" class="form-check-input" id="newestOnTop" checked />
-                      <label class="form-check-label" for="newestOnTop">Newest on Top</label>
-                      <span class="badge rounded-pill text-bg-success" style="font-size: 0.85em">New</span>
+                    <div class="col-md-6 d-flex align-items-end">
+                      <div class="form-check form-switch mb-2">
+                        <input type="checkbox" class="form-check-input" id="newestOnTop" checked />
+                        <label class="form-check-label" for="newestOnTop">Newest on top</label>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="row g-3 mt-0">
-                <div class="col-md-6">
-                  <button class="btn btn-light w-100" id="toastClearButton" type="button">Clear all toasts</button>
+
+                <!-- Behavior -->
+                <div class="tab-pane fade" id="tab-behavior" role="tabpanel">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="duration" class="form-label">
+                        Duration (ms)
+                        <span class="form-text ms-1">0 = never expires</span>
+                      </label>
+                      <input type="number" id="duration" class="form-control" value="3000" min="0" />
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                      <div class="form-check form-switch mb-2">
+                        <input type="checkbox" class="form-check-input" id="withProgressBar" />
+                        <label class="form-check-label" for="withProgressBar">Progress bar</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="progressBarDuration" class="form-label">Progress bar tick (ms)</label>
+                      <input type="number" id="progressBarDuration" class="form-control" value="100" min="1" />
+                    </div>
+                    <div class="col-md-6">
+                      <label for="progressBarDirection" class="form-label">Progress bar direction</label>
+                      <select id="progressBarDirection" class="form-select">
+                        <option value="decrease" selected>Decreasing</option>
+                        <option value="increase">Increasing</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="closeButton" checked />
+                        <label class="form-check-label" for="closeButton">Close button</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="tapToDismiss" />
+                        <label class="form-check-label" for="tapToDismiss">Tap to dismiss</label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-md-6">
-                  <button class="btn btn-primary w-100" id="toastButton" type="button">Open Toast</button>
+
+                <!-- Appearance -->
+                <div class="tab-pane fade" id="tab-appearance" role="tabpanel">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="animationType" class="form-label">Animation</label>
+                      <select id="animationType" class="form-select">
+                        <option value="fade" selected>Fade</option>
+                        <option value="slide">Slide</option>
+                        <option value="zoom">Zoom</option>
+                        <option value="bounce">Bounce</option>
+                        <option value="flip">Flip</option>
+                        <option value="roll">Roll</option>
+                        <option value="lightspeed">LightSpeed</option>
+                        <option value="jackinthebox">JackInTheBox</option>
+                        <option value="none">None</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="toastDirection" class="form-label">Direction</label>
+                      <select id="toastDirection" class="form-select">
+                        <option value="ltr" selected>LTR</option>
+                        <option value="rtl">RTL</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="customClasses" class="form-label">Custom classes (container)</label>
+                      <input type="text" id="customClasses" class="form-control" value="" autocomplete="off" />
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                      <div class="form-check form-switch mb-2">
+                        <input type="checkbox" class="form-check-input" id="showIcons" checked />
+                        <label class="form-check-label" for="showIcons">Icons</label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </form>
           </div>
         </div>
-      </div>
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <h2 class="text-body-emphasis border-bottom border-secondary border-2 pb-1 mb-3">
-            Updating Active Toasts
-            <span class="badge rounded-pill text-bg-success" style="font-size: 0.65em; vertical-align: middle"
-              >New</span
-            >
-          </h2>
-          <p class="text-body-secondary mb-3">
-            Toast methods return a <strong>handle</strong> that lets you update the same toast in-place — perfect for
-            multi-step async workflows like API calls or file uploads.
-          </p>
-          <div class="row g-3">
-            <div class="col-md-4">
-              <button class="btn btn-outline-info w-100" id="demoConnectBtn" type="button">🔌 Fetch Repo Info</button>
-              <div class="form-text text-secondary mt-1">Fetching → Parsing → Loaded with progress bar</div>
-            </div>
-            <div class="col-md-4">
-              <button class="btn btn-outline-warning w-100" id="demoUploadBtn" type="button">📤 Submit POST</button>
-              <div class="form-text text-secondary mt-1">Submitting → Processing → Post created</div>
-            </div>
-            <div class="col-md-4">
-              <button class="btn btn-outline-danger w-100" id="demoFailBtn" type="button">❌ Force Failure</button>
-              <div class="form-text text-secondary mt-1">Fetching → Validating → Fails with error</div>
+
+        <!-- Live code + actions -->
+        <div class="col-lg-5">
+          <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="section-title">Your code</div>
+                <button class="btn btn-sm btn-outline-secondary" id="copyCode" type="button">Copy</button>
+              </div>
+              <pre
+                class="bg-body-tertiary border rounded p-3 mb-3 code-preview flex-grow-1"
+              ><code id="codePreview"></code></pre>
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary flex-grow-1" id="toastButton" type="button">Show toast</button>
+                <button class="btn btn-outline-secondary" id="toastClearButton" type="button">Clear all</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Scenarios -->
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <h2 class="h5 mb-1">Scenarios</h2>
+          <p class="text-body-secondary small mb-3">
+            Ready-made examples. They use the manager settings above and simulate network calls, so they work offline.
+          </p>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex align-items-center gap-3 px-0">
+              <span class="fs-4 lh-1" aria-hidden="true">🔔</span>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">
+                  Update available<span class="badge rounded-pill text-bg-success ms-2">New</span>
+                </div>
+                <div class="small text-body-secondary">Persistent toast at bottom-center with a Reload button.</div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary px-3" id="demoActionBtn" type="button">Run</button>
+            </li>
+            <li class="list-group-item d-flex align-items-center gap-3 px-0">
+              <span class="fs-4 lh-1" aria-hidden="true">🧭</span>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">
+                  Three positions at once<span class="badge rounded-pill text-bg-success ms-2">New</span>
+                </div>
+                <div class="small text-body-secondary">One manager, three containers, each with its own queue.</div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary px-3" id="demoPositionsBtn" type="button">Run</button>
+            </li>
+            <li class="list-group-item d-flex align-items-center gap-3 px-0">
+              <span class="fs-4 lh-1" aria-hidden="true">🔁</span>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">
+                  Retry without closing<span class="badge rounded-pill text-bg-success ms-2">New</span>
+                </div>
+                <div class="small text-body-secondary">
+                  Action with <code>dismissOnClick: false</code> that updates the toast.
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary px-3" id="demoRetryBtn" type="button">Run</button>
+            </li>
+            <li class="list-group-item d-flex align-items-center gap-3 px-0">
+              <span class="fs-4 lh-1" aria-hidden="true">📤</span>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">Upload progress</div>
+                <div class="small text-body-secondary">
+                  Uploading → Processing → Done, via <code>handle.update()</code>.
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary px-3" id="demoUploadBtn" type="button">Run</button>
+            </li>
+            <li class="list-group-item d-flex align-items-center gap-3 px-0">
+              <span class="fs-4 lh-1" aria-hidden="true">❌</span>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">Force failure</div>
+                <div class="small text-body-secondary">Validating → fails with an error.</div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary px-3" id="demoFailBtn" type="button">Run</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Security &amp; notes</h2>
+          <ul class="mb-0 small">
+            <li>
+              The title, the action label and the message are inserted as <strong>text</strong>. Only
+              <code>isHtml: true</code> renders HTML.
+              <strong>Never use <code>isHtml</code> with untrusted text</strong>: the library has no sanitizer, so
+              sanitize it yourself or leave <code>isHtml</code> off.
+            </li>
+            <li>
+              CSP friendly: no <code>&lt;style&gt;</code> element, no <code>style</code> attribute, no
+              <code>eval</code>. Load <code>dist/styles.css</code> yourself.
+            </li>
+            <li>Errors and warnings use <code>role="alert"</code>; the rest use <code>role="status"</code>.</li>
+            <li>
+              Call <code>toast.destroy()</code> to remove every container, timer and listener (the
+              <strong>Clear all</strong> button does).
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <div
         id="loading-overlay"
         class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
@@ -324,348 +441,395 @@
         </div>
       </div>
     </div>
-    <footer class="bg-body-tertiary py-4 mt-5 border-top">
+
+    <footer class="bg-body-tertiary py-4 mt-4 border-top">
       <div class="container text-center">
-        <div class="d-flex flex-column align-items-center justify-content-center gap-2">
-          <div>
-            <a
-              href="https://github.com/andreasnicolaou/toastify"
-              target="_blank"
-              rel="noopener"
-              class="me-3 fw-semibold text-decoration-none"
-            >
-              <img
-                src="https://img.shields.io/github/stars/andreasnicolaou/toastify?style=social"
-                alt="GitHub stars"
-                style="vertical-align: middle; height: 22px; margin-right: 6px"
-              />
-              GitHub
-            </a>
-            <a
-              href="https://www.npmjs.com/package/@andreasnicolaou/toastify"
-              target="_blank"
-              rel="noopener"
-              class="fw-semibold text-decoration-none"
-            >
-              <img
-                src="https://img.shields.io/npm/v/@andreasnicolaou/toastify?color=blue"
-                alt="NPM version"
-                style="vertical-align: middle; height: 22px; margin-right: 6px"
-              />
-              NPM
-            </a>
-          </div>
-        </div>
+        <a
+          href="https://github.com/andreasnicolaou/toastify"
+          target="_blank"
+          rel="noopener"
+          class="me-3 fw-semibold text-decoration-none"
+        >
+          <img
+            src="https://img.shields.io/github/stars/andreasnicolaou/toastify?style=social"
+            alt="GitHub stars"
+            style="vertical-align: middle; height: 22px; margin-right: 6px"
+          />
+          GitHub
+        </a>
+        <a
+          href="https://www.npmjs.com/package/@andreasnicolaou/toastify"
+          target="_blank"
+          rel="noopener"
+          class="fw-semibold text-decoration-none"
+        >
+          <img
+            src="https://img.shields.io/npm/v/@andreasnicolaou/toastify?color=blue"
+            alt="Published NPM version"
+            style="vertical-align: middle; height: 22px; margin-right: 6px"
+          />
+          NPM
+        </a>
       </div>
     </footer>
-    <script src="https://unpkg.com/@andreasnicolaou/toastify/dist/index.umd.min.js"></script>
+
+    <script>
+      document.write('<script src="' + toastifyBase + 'index.umd.min.js"><\/script>');
+    </script>
     <!-- Bootstrap JS bundle (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      function getRandomTitle() {
-        const titles = [
-          'Heads up!',
-          'Success!',
-          'Warning!',
-          'Info',
-          'Error',
-          'Notice',
-          'Hello!',
-          'Update',
-          'Reminder',
-          'Action Required',
-          '🎉 Congratulations!',
-          '🚀 Launch Complete',
-          '🔥 Hot News!',
-          '💡 Pro Tip',
-          '✅ All Done',
-          '⚠️ Caution',
-          '🔔 Alert',
-          '🥳 Party Time!',
-          '📢 Announcement',
-          '📝 Note',
-          '🤖 Robot Message',
-          '🌟 Featured',
-          '💬 New Message',
-          '🔒 Security',
-          '🕒 Time Update',
-          '📦 Package Ready',
-          '🎁 Gift Inside',
-          '🍀 Good Luck!',
-          '🌈 Rainbow Toast',
-          '🧩 Puzzle Solved',
-          '🎯 Target Hit',
-        ];
-        return titles[Math.floor(Math.random() * titles.length)];
-      }
-      function getRandomMessage() {
-        const messages = [
-          '🚀 Toastify can be added to Angular, React, Vue, Svelte, Next.js, and more!',
-          '🔒 Your account is secure.',
-          '📦 Your package has shipped.',
-          '🎶 Now playing: Your favorite song.',
-          '🧠 Smart move!',
-          '📝 Remember to save your work.',
-          '🧩 All pieces are in place.',
-          '💬 You received a new message.',
-          '✅ Task completed successfully.',
-          '💻 Use Toastify in your SPA, SSR, or static site—frameworks like Next.js, Nuxt, Astro, and more!',
-          '🔔 You have 3 new alerts.',
-          '🧩 Toastify is framework-agnostic: use it in any JS project!',
-          '💡 Did you know? You can customize this toast.',
-          '👋 Hello from Toastify!',
-          '🌍 Welcome, global user!',
-          '🎯 Bullseye! You nailed it.',
-          '⚠️ Please double-check your input.',
-          '🎁 You have unlocked a new reward.',
-          '🚀 Your rocket is ready for launch.',
-          '🍀 Wishing you the best of luck!',
-          '📢 Don’t miss our latest update.',
-          '📈 Your stats are up 20%.',
-          '🌈 Enjoy the colors of the day.',
-          '✨ Works with Angular, React, Vue, Svelte, and even plain JS!',
-          '🛠️ Maintenance scheduled for tonight.',
-          '🔥 Things are heating up!',
-          '😎 Toasts can be cool too.',
-          '🥳 Let’s celebrate your achievement!',
-          '🍕 Pizza party at 5 PM.',
-          '🌐 Toastify supports all modern frameworks: Angular, React, Vue, Svelte, and more.',
-          '🕒 The time is now 3:45 PM.',
-          '🌟 You’re a star! Keep shining.',
-          '💥 Boom! That was fast.',
-          '🔗 Integrate Toastify with your favorite framework: Angular, React, Vue, Svelte, Next.js, Nuxt, Astro, and more.',
-          '🦄 Unicorns are real in this toast.',
-          '🤖 This message was generated by AI.',
-          '📈 Your stats are up 20%.',
-          '✅ Task completed successfully.',
-          'An error occurred. Please try again.',
-          'Check your settings for more info.',
-          'This is just a test notification.',
-          'Everything looks good!',
-          '🎉 Welcome aboard! Enjoy your stay.',
-          'Action completed successfully.',
-          'Something just happened.',
-          'Please review the details.',
-          'Your changes have been saved.',
-          'You have a new notification.',
-          'This is a random toast message.',
-        ];
-        return messages[Math.floor(Math.random() * messages.length)];
-      }
-
-      // Helper to get element by id, available everywhere
+      const TITLES = [
+        'Heads up!',
+        'Success!',
+        'Notice',
+        'Hello!',
+        'Reminder',
+        '🎉 Congratulations!',
+        '🚀 Launch Complete',
+        '💡 Pro Tip',
+        '✅ All Done',
+        '⚠️ Caution',
+        '🔔 Alert',
+        '📢 Announcement',
+        '💬 New Message',
+        '🔒 Security',
+        '📦 Package Ready',
+      ];
+      const MESSAGES = [
+        '🚀 Toastify works with Angular, React, Vue, Svelte, Next.js, and more!',
+        '🔒 Your account is secure.',
+        '📦 Your package has shipped.',
+        '✅ Task completed successfully.',
+        '💡 Did you know? You can customize this toast.',
+        '👋 Hello from Toastify!',
+        '⚠️ Please double-check your input.',
+        '📈 Your stats are up 20%.',
+        '🛠️ Maintenance scheduled for tonight.',
+        '🧩 Toastify is framework-agnostic: use it in any JS project!',
+        'Your changes have been saved.',
+        'You have a new notification.',
+      ];
+      const pick = (list) => list[Math.floor(Math.random() * list.length)];
       const getElement = (id) => document.getElementById(id);
+      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-      // All Toastify demo logic is wrapped in this function and only called after Toastify is loaded
-      function initToastifyDemo() {
-        let lastPosition = 'top-right';
-        let lastCustomClasses = '';
+      // Library defaults, used to keep the code preview short
+      const DEFAULTS = {
+        duration: 3000,
+        isHtml: false,
+        withProgressBar: false,
+        progressBarDuration: 100,
+        closeButton: false,
+        showIcons: true,
+        direction: 'ltr',
+        animationType: 'fade',
+        tapToDismiss: false,
+        progressBarDirection: 'decrease',
+      };
 
-        let toastrInstance = new toastify.ToastifyManager(getElement('toastPosition')?.value || 'top-right', {
-          duration: Number.parseInt(getElement('duration')?.value || '3000', 10),
-          progressBarDuration: Number.parseInt(getElement('progressBarDuration')?.value || '100', 10),
-          withProgressBar: getElement('withProgressBar')?.checked ?? false,
-          customClasses: getElement('customClasses')?.value || '',
-          isHtml: getElement('isHtml')?.checked ?? false,
-          showIcons: getElement('showIcons')?.checked ?? false,
-          closeButton: getElement('closeButton')?.checked ?? false,
-          direction: getElement('toastDirection')?.value || 'ltr',
-          maxToasts: Number.parseInt(getElement('maxToasts')?.value || '5', 10),
-          animationType: getElement('animationType')?.value || 'fade',
-          tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
-          newestOnTop: getElement('newestOnTop')?.checked ?? false,
-          progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
-        });
+      const POSITIONS = [
+        ['top-left', '↖'],
+        ['top-center', '↑'],
+        ['top-right', '↗'],
+        [null, ''],
+        ['center', '●'],
+        [null, ''],
+        ['bottom-left', '↙'],
+        ['bottom-center', '↓'],
+        ['bottom-right', '↘'],
+      ];
 
-        function resetToastrInstance() {
-          document.querySelectorAll('.noap-toastify-container').forEach((toastContainer) => {
-            toastContainer.remove();
+      // 3x3 grid picker. allowNone adds a "same as manager" button. Returns { get, onChange }.
+      function createPositionPicker(root, { initial, allowNone }) {
+        let value = initial;
+        let full = false;
+        const listeners = [];
+        const cells = [];
+
+        const fullWrap = document.createElement('div');
+        fullWrap.className = 'form-check form-switch mt-2';
+        fullWrap.style.gridColumn = '1 / -1';
+        fullWrap.innerHTML =
+          '<input type="checkbox" class="form-check-input" /><label class="form-check-label small">Full width</label>';
+        const fullInput = fullWrap.querySelector('input');
+        const fullId = `${root.id}-full`;
+        fullInput.id = fullId;
+        fullWrap.querySelector('label').htmlFor = fullId;
+
+        const render = () => {
+          for (const cell of cells) cell.classList.toggle('active', cell.dataset.pos === String(value));
+          fullInput.disabled = value !== 'top-center' && value !== 'bottom-center';
+          if (fullInput.disabled) {
+            full = false;
+            fullInput.checked = false;
+          }
+        };
+        const emit = () => {
+          render();
+          for (const fn of listeners) fn();
+        };
+
+        if (allowNone) {
+          const none = document.createElement('button');
+          none.type = 'button';
+          none.className = 'pos-cell pos-none';
+          none.textContent = 'Same as manager position';
+          none.dataset.pos = '';
+          none.addEventListener('click', () => {
+            value = '';
+            emit();
           });
-          toastrInstance = new toastify.ToastifyManager(getElement('toastPosition')?.value || 'top-right', {
-            duration: Number.parseInt(getElement('duration')?.value || '3000', 10),
-            progressBarDuration: Number.parseInt(getElement('progressBarDuration')?.value || '100', 10),
-            withProgressBar: getElement('withProgressBar')?.checked ?? false,
-            customClasses: getElement('customClasses')?.value || '',
-            isHtml: getElement('isHtml')?.checked ?? false,
-            showIcons: getElement('showIcons')?.checked ?? false,
-            closeButton: getElement('closeButton')?.checked ?? false,
-            direction: getElement('toastDirection')?.value || 'ltr',
-            maxToasts: Number.parseInt(getElement('maxToasts')?.value || '5', 10),
-            animationType: getElement('animationType')?.value || 'fade',
-            tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
-            newestOnTop: getElement('newestOnTop')?.checked ?? false,
-            progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
-          });
+          root.appendChild(none);
+          cells.push(none);
         }
-
-        getElement('toastClearButton')?.addEventListener('click', resetToastrInstance);
-        getElement('maxToasts')?.addEventListener('change', resetToastrInstance);
-        getElement('newestOnTop')?.addEventListener('change', resetToastrInstance);
-        getElement('withProgressBar')?.addEventListener('change', updateProgressBarDirectionState);
-
-        getElement('toastButton')?.addEventListener('click', () => {
-          initToastr();
-          if (!toastrInstance) return;
-          const type = getElement('toastType')?.value;
-          let title = getElement('toastTitle')?.value.trim();
-          let message = getElement('toastMessage')?.value.trim();
-          if (!title) title = getRandomTitle();
-          if (!message) message = getRandomMessage();
-          if (type && typeof toastrInstance[type] === 'function') {
-            toastrInstance[type](title, message, {
-              duration: Number.parseInt(getElement('duration')?.value || '3000', 10),
-              progressBarDuration: Number.parseInt(getElement('progressBarDuration')?.value || '100', 10),
-              withProgressBar: getElement('withProgressBar')?.checked ?? false,
-              isHtml: getElement('isHtml')?.checked ?? false,
-              showIcons: getElement('showIcons')?.checked ?? false,
-              closeButton: getElement('closeButton')?.checked ?? false,
-              direction: getElement('toastDirection')?.value || 'ltr',
-              maxToasts: Number.parseInt(getElement('maxToasts')?.value || '5', 10),
-              animationType: getElement('animationType')?.value || 'fade',
-              tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
-              newestOnTop: getElement('newestOnTop')?.checked ?? false,
-              progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
+        for (const [pos, glyph] of POSITIONS) {
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'pos-cell';
+          if (pos) {
+            cell.dataset.pos = pos;
+            cell.title = pos;
+            cell.textContent = glyph;
+            cell.addEventListener('click', () => {
+              value = pos;
+              emit();
             });
+            cells.push(cell);
           } else {
-            console.error('Invalid toast type:', type);
+            cell.disabled = true;
           }
-        });
-
-        function initToastr() {
-          const position = getElement('toastPosition')?.value || 'top-right';
-          const customClasses = getElement('customClasses')?.value || '';
-          const animationType = getElement('animationType')?.value || 'fade';
-          if (!toastrInstance || lastPosition !== position || lastCustomClasses !== customClasses) {
-            document.querySelectorAll('.noap-toastify-container').forEach((e) => e.remove());
-            lastPosition = position;
-            lastCustomClasses = customClasses;
-            toastrInstance = new toastify.ToastifyManager(position, {
-              duration: Number.parseInt(getElement('duration')?.value || '3000', 10),
-              progressBarDuration: Number.parseInt(getElement('progressBarDuration')?.value || '100', 10),
-              withProgressBar: getElement('withProgressBar')?.checked ?? false,
-              customClasses: customClasses,
-              isHtml: getElement('isHtml')?.checked ?? false,
-              showIcons: getElement('showIcons')?.checked ?? false,
-              closeButton: getElement('closeButton')?.checked ?? false,
-              direction: getElement('toastDirection')?.value || 'ltr',
-              maxToasts: Number.parseInt(getElement('maxToasts')?.value || '5', 10),
-              animationType: animationType,
-              tapToDismiss: getElement('tapToDismiss')?.checked ?? false,
-              newestOnTop: getElement('newestOnTop')?.checked ?? false,
-              progressBarDirection: getElement('progressBarDirection')?.value || 'decrease',
-            });
-          }
+          root.appendChild(cell);
         }
-        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        root.appendChild(fullWrap);
+        fullInput.addEventListener('change', () => {
+          full = fullInput.checked;
+          emit();
+        });
+        render();
+        return {
+          get: () => (value && full ? `${value}-full` : value),
+          onChange: (fn) => listeners.push(fn),
+        };
+      }
 
-        getElement('demoConnectBtn')?.addEventListener('click', async () => {
-          initToastr();
-          if (!toastrInstance) return;
-          const handle = toastrInstance.info('GitHub', 'Fetching repository info...', { duration: 0 });
-          try {
-            const resp = await fetch('https://api.github.com/repos/andreasnicolaou/toastify');
-            await delay(800);
-            handle.update({ message: 'Parsing response...' });
-            const data = await resp.json();
-            await delay(800);
-            handle.update({
-              title: 'Repository Loaded',
-              message: `⭐ ${data.stargazers_count} stars · 🍴 ${data.forks_count} forks`,
-              type: 'success',
-              withProgressBar: true,
-              progressBarDuration: 50,
+      const quote = (str) => `'${String(str).replaceAll('\\', '\\\\').replaceAll("'", "\\'").replaceAll('\n', '\\n')}'`;
+
+      function initToastifyDemo() {
+        const num = (id, fallback) => Number.parseInt(getElement(id)?.value || String(fallback), 10);
+        const checked = (id) => getElement(id)?.checked ?? false;
+        const mainPicker = createPositionPicker(getElement('pickerMain'), { initial: 'top-right', allowNone: false });
+        const overridePicker = createPositionPicker(getElement('pickerOverride'), { initial: '', allowNone: true });
+
+        let manager = null;
+        let managerKey = '';
+
+        function readSettings() {
+          return {
+            manager: {
+              position: mainPicker.get(),
+              customClasses: getElement('customClasses').value,
+              maxToasts: num('maxToasts', 5),
+              newestOnTop: checked('newestOnTop'),
+            },
+            type: getElement('toastType').value,
+            title: getElement('toastTitle').value.trim(),
+            message: getElement('toastMessage').value.trim(),
+            options: {
+              duration: num('duration', 3000),
+              isHtml: checked('isHtml'),
+              withProgressBar: checked('withProgressBar'),
+              progressBarDuration: num('progressBarDuration', 100),
+              closeButton: checked('closeButton'),
+              showIcons: checked('showIcons'),
+              direction: getElement('toastDirection').value,
+              animationType: getElement('animationType').value,
+              tapToDismiss: checked('tapToDismiss'),
+              progressBarDirection: getElement('progressBarDirection').value,
+            },
+            override: overridePicker.get() || undefined,
+            action: checked('withAction')
+              ? { label: getElement('actionLabel').value || 'Action', dismissOnClick: checked('actionDismiss') }
+              : undefined,
+          };
+        }
+
+        function removeContainers() {
+          manager?.destroy();
+          document.querySelectorAll('.noap-toastify-container').forEach((el) => el.remove());
+          manager = null;
+          managerKey = '';
+        }
+
+        // Recreated only when a constructor-level setting changes, so toasts keep stacking otherwise.
+        function getManager() {
+          const m = readSettings().manager;
+          const key = JSON.stringify(m);
+          if (!manager || key !== managerKey) {
+            removeContainers();
+            manager = new toastify.ToastifyManager(m.position, {
+              maxToasts: m.maxToasts,
+              newestOnTop: m.newestOnTop,
+              customClasses: m.customClasses,
             });
+            managerKey = key;
+          }
+          return manager;
+        }
+
+        function buildCode() {
+          const s = readSettings();
+          const ctorOpts = [];
+          if (s.manager.maxToasts !== 5) ctorOpts.push(`maxToasts: ${s.manager.maxToasts}`);
+          if (s.manager.newestOnTop) ctorOpts.push('newestOnTop: true');
+          if (s.manager.customClasses) ctorOpts.push(`customClasses: ${quote(s.manager.customClasses)}`);
+          const ctor = `const toast = new ToastifyManager(${quote(s.manager.position)}${
+            ctorOpts.length ? `, { ${ctorOpts.join(', ')} }` : ''
+          });`;
+
+          const lines = [];
+          for (const [key, def] of Object.entries(DEFAULTS)) {
+            if (key === 'duration' && s.options.withProgressBar) continue;
+            if (['progressBarDuration', 'progressBarDirection'].includes(key) && !s.options.withProgressBar) continue;
+            const value = s.options[key];
+            if (value !== def) lines.push(`  ${key}: ${typeof value === 'string' ? quote(value) : value},`);
+          }
+          if (s.override) lines.push(`  position: ${quote(s.override)},`);
+          if (s.action) {
+            const dismiss = s.action.dismissOnClick ? '' : ', dismissOnClick: false';
+            lines.push(`  action: { label: ${quote(s.action.label)}, onClick: (handle) => {/* ... */}${dismiss} },`);
+          }
+          const title = quote(s.title || 'Title');
+          const message = quote(s.message || 'Message');
+          const call = lines.length
+            ? `toast.${s.type}(${title}, ${message}, {\n${lines.join('\n')}\n});`
+            : `toast.${s.type}(${title}, ${message});`;
+          return `${ctor}\n\n${call}`;
+        }
+
+        function updatePreview() {
+          getElement('codePreview').textContent = buildCode();
+        }
+
+        function updateProgressBarState() {
+          const on = checked('withProgressBar');
+          getElement('duration').disabled = on;
+          getElement('progressBarDirection').disabled = !on;
+          getElement('progressBarDuration').disabled = !on;
+          getElement('actionLabel').disabled = !checked('withAction');
+          getElement('actionDismiss').disabled = !checked('withAction');
+        }
+
+        function refresh() {
+          updateProgressBarState();
+          updatePreview();
+        }
+
+        function showToast() {
+          const s = readSettings();
+          const mgr = getManager();
+          if (typeof mgr[s.type] !== 'function') return;
+          const options = { ...s.options, position: s.override };
+          if (s.action) {
+            options.action = {
+              label: s.action.label,
+              dismissOnClick: s.action.dismissOnClick,
+              onClick: () => mgr.info('Action clicked', `"${s.action.label}" was clicked.`, { position: s.override }),
+            };
+          }
+          mgr[s.type](s.title || pick(TITLES), s.message || pick(MESSAGES), options);
+        }
+
+        getElement('toastify-form').addEventListener('input', refresh);
+        getElement('toastify-form').addEventListener('change', refresh);
+        mainPicker.onChange(refresh);
+        overridePicker.onChange(refresh);
+        getElement('toastButton').addEventListener('click', showToast);
+        getElement('toastClearButton').addEventListener('click', removeContainers);
+        getElement('copyCode').addEventListener('click', async (event) => {
+          const button = event.currentTarget;
+          try {
+            await navigator.clipboard.writeText(getElement('codePreview').textContent);
+            button.textContent = 'Copied!';
           } catch {
-            handle.update({ title: 'Error', message: 'Could not load repository data', type: 'error', duration: 5000 });
+            button.textContent = 'Copy failed';
           }
+          setTimeout(() => (button.textContent = 'Copy'), 1500);
+        });
+        refresh();
+
+        // ---- Scenarios ----
+        getElement('demoActionBtn').addEventListener('click', () => {
+          const mgr = getManager();
+          mgr.info('New version available', 'Reload to get the latest update.', {
+            duration: 0,
+            position: 'bottom-center',
+            action: {
+              label: 'Reload',
+              onClick: () => mgr.success('Reloaded', '(demo only: the page was not reloaded)'),
+            },
+          });
         });
 
-        getElement('demoUploadBtn')?.addEventListener('click', async () => {
-          initToastr();
-          if (!toastrInstance) return;
-          const handle = toastrInstance.warning('API', 'Submitting post...', { duration: 0 });
-          try {
-            const resp = await fetch('https://jsonplaceholder.typicode.com/posts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title: 'Toastify Demo', body: 'Testing the update API', userId: 1 }),
-            });
-            await delay(800);
-            handle.update({ message: 'Processing server response...' });
-            const data = await resp.json();
-            await delay(800);
-            handle.update({
-              title: 'Post Created',
-              message: `New post ID: ${data.id} — "${data.title}"`,
-              type: 'success',
-              withProgressBar: true,
-              progressBarDuration: 50,
-            });
-          } catch {
-            handle.update({ title: 'Error', message: 'POST request failed', type: 'error', duration: 5000 });
-          }
+        getElement('demoPositionsBtn').addEventListener('click', () => {
+          const mgr = getManager();
+          mgr.info('Top right', 'Manager default or override, your choice.', { position: 'top-right', duration: 5000 });
+          mgr.success('Bottom left', 'Its own container and queue.', { position: 'bottom-left', duration: 5000 });
+          mgr.warning('Center', 'Animations follow this toast, not the manager.', {
+            position: 'center',
+            animationType: 'slide',
+            duration: 5000,
+          });
         });
 
-        getElement('demoFailBtn')?.addEventListener('click', async () => {
-          initToastr();
-          if (!toastrInstance) return;
-          const handle = toastrInstance.info('Request', 'Fetching resource...', { duration: 0 });
-          try {
-            const resp = await fetch('https://jsonplaceholder.typicode.com/posts/1');
-            await delay(800);
-            handle.update({ message: 'Validating data...' });
-            const data = await resp.json();
-            await delay(800);
-            if (data.userId !== 999) {
-              throw new Error(`Unexpected userId: ${data.userId}`);
-            }
-            handle.update({ title: 'Done', message: 'Validated!', type: 'success', duration: 3000 });
-          } catch (err) {
-            handle.update({
-              title: 'Validation Failed',
-              message: err instanceof Error ? err.message : 'Unknown error',
-              type: 'error',
-              duration: 5000,
-            });
-          }
+        getElement('demoRetryBtn').addEventListener('click', () => {
+          const mgr = getManager();
+          let attempts = 0;
+          mgr.error('Upload failed', 'The connection was reset.', {
+            duration: 0,
+            action: {
+              label: 'Retry',
+              dismissOnClick: false,
+              onClick: (handle) => {
+                attempts += 1;
+                if (attempts < 2) {
+                  handle.update({ message: `Retry ${attempts} failed. Try again.` });
+                } else {
+                  handle.update({
+                    type: 'success',
+                    title: 'Uploaded',
+                    message: 'Back online.',
+                    action: undefined,
+                    duration: 3000,
+                  });
+                }
+              },
+            },
+          });
+        });
+
+        getElement('demoUploadBtn').addEventListener('click', async () => {
+          const handle = getManager().info('Upload', 'Uploading file...', { duration: 0 });
+          await delay(1000);
+          handle.update({ message: 'Processing on the server...' });
+          await delay(1000);
+          handle.update({
+            title: 'Upload complete',
+            message: 'report.pdf is ready.',
+            type: 'success',
+            withProgressBar: true,
+            progressBarDuration: 50,
+          });
+        });
+
+        getElement('demoFailBtn').addEventListener('click', async () => {
+          const handle = getManager().info('Request', 'Fetching resource...', { duration: 0 });
+          await delay(900);
+          handle.update({ message: 'Validating data...' });
+          await delay(900);
+          handle.update({ title: 'Validation failed', message: 'Unexpected userId: 1', type: 'error', duration: 5000 });
         });
       }
-      function setThemeIcon(theme) {
-        const themeIcon = document.querySelector('.theme-icon');
-        if (!themeIcon) return;
-        if (theme === 'light') {
-          themeIcon.innerHTML =
-            '<title>Toggle theme</title><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-        } else {
-          themeIcon.innerHTML =
-            '<title>Toggle theme</title><circle cx="12" cy="12" r="5"/><path d="m15 1 2 2-2 2M6 11l-2-2 2-2M20 11l2 2-2 2M9 19l-2 2 2 2M12 3V1M12 23v-2M3 12H1M23 12h-2"/>';
-        }
-      }
-      function applyTheme(theme) {
-        document.body.dataset.bsTheme = theme;
-        setThemeIcon(theme);
-        localStorage.setItem('theme', theme);
-      }
-
-      function updateProgressBarDirectionState() {
-        if (!getElement('withProgressBar')) {
-          return;
-        }
-        getElement('duration').disabled = !!getElement('withProgressBar').checked;
-        getElement('progressBarDirection').disabled = !getElement('withProgressBar').checked;
-        getElement('progressBarDuration').disabled = !getElement('withProgressBar').checked;
-      }
-
-      getElement('theme-toggle').addEventListener('click', function () {
-        const body = document.body;
-        const currentTheme = body.dataset.bsTheme || 'light';
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        applyTheme(newTheme);
-      });
-      document.addEventListener('DOMContentLoaded', function () {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        applyTheme(savedTheme);
-      });
 
       const hideLoadingOverlay = (onDone) => {
         setTimeout(() => {
@@ -678,58 +842,36 @@
               document.body.classList.remove('loading');
               if (typeof onDone === 'function') onDone();
             }, 300);
-          } else {
-            if (typeof onDone === 'function') onDone();
+          } else if (typeof onDone === 'function') {
+            onDone();
           }
-        }, 1500);
+        }, 300);
       };
 
       function start() {
         if (globalThis.bootstrap && typeof globalThis.bootstrap.Tooltip === 'function') {
           new globalThis.bootstrap.Tooltip(document.body, { selector: '[data-toggle="tooltip"]' });
         }
+        const badge = getElement('source-badge');
+        badge.textContent = toastifyLocal ? 'Local build' : 'Published on npm';
+        badge.className = `badge ${toastifyLocal ? 'text-bg-warning' : 'text-bg-secondary'}`;
+        getElement('source-url').textContent = `${toastifyBase}index.umd.min.js`;
+
         const cdnStatus = getElement('cdn-status');
-        try {
-          if (typeof toastify !== 'undefined' && typeof toastify.ToastifyManager === 'function') {
-            cdnStatus.innerHTML = `
-              <svg class="text-success" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-              </svg>
-            `;
-            cdnStatus.setAttribute('title', 'CDN loaded successfully.');
-            hideLoadingOverlay(() => {
-              initToastifyDemo();
-            });
-          } else {
-            cdnStatus.innerHTML = `
-              <svg class="text-danger" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-              </svg>
-            `;
-            cdnStatus.setAttribute('title', 'CDN failed to load Toastify.');
-            getElement('toastButton')?.setAttribute('disabled', 'true');
-            getElement('toastClearButton')?.setAttribute('disabled', 'true');
-            hideLoadingOverlay(() => {
-              initToastifyDemo();
-            });
-          }
-        } catch (error) {
-          console.error('Failed to load Toastify:', error);
-          cdnStatus.innerHTML = `
-            <svg class="text-danger" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-            </svg>
-          `;
-          cdnStatus.setAttribute('title', 'Error loading Toastify.');
-          getElement('toastButton')?.setAttribute('disabled', 'true');
-          getElement('toastClearButton')?.setAttribute('disabled', 'true');
-          hideLoadingOverlay(() => {
-            initToastifyDemo();
-          });
+        const ok = typeof toastify !== 'undefined' && typeof toastify.ToastifyManager === 'function';
+        cdnStatus.innerHTML = ok
+          ? '<svg class="text-success" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>'
+          : '<svg class="text-danger" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/></svg>';
+        cdnStatus.setAttribute('title', ok ? 'Toastify loaded successfully.' : 'Toastify failed to load.');
+        if (ok) {
+          hideLoadingOverlay(initToastifyDemo);
+        } else {
+          getElement('toastButton').disabled = true;
+          getElement('toastClearButton').disabled = true;
+          hideLoadingOverlay();
         }
       }
       start();
-      updateProgressBarDirectionState();
     </script>
   </body>
 </html>

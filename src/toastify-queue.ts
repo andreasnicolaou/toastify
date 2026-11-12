@@ -19,6 +19,19 @@ export class ToastifyQueue {
   }
 
   /**
+   * Drops every queued toast, completes the visible ones (clearing their timers and listeners)
+   * and removes the container from the DOM.
+   * @memberof ToastifyQueue
+   */
+  public destroy(): void {
+    this.queue.length = 0;
+    for (const element of Array.from(this.container.element.children)) {
+      element.dispatchEvent(new CustomEvent('toastify:evict'));
+    }
+    this.container.destroy();
+  }
+
+  /**
    * Adds a toast to the queue or displays it immediately if there is space.
    * @param title - The title of the toast.
    * @param message - The message content of the toast.

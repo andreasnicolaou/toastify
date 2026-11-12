@@ -53,6 +53,9 @@ describe('ToastifyManager', () => {
       tapToDismiss: false,
     };
     expect(toastifyManager).toBeDefined();
+    // the container and queue are created lazily, on the first toast
+    expect(ToastifyContainer).not.toHaveBeenCalled();
+    toastifyManager.info('t', 'm');
     expect(ToastifyContainer).toHaveBeenCalledWith('top-right', undefined);
     expect(ToastifyQueue).toHaveBeenCalledWith({ element: expect.any(HTMLElement) }, 5, undefined);
     expect(toastifyManager).toMatchObject({ options: defaultOptions });
